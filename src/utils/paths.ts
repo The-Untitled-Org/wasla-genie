@@ -41,12 +41,14 @@ export function getToolMarkers(scope: 'user' | 'workspace' = 'user'): Record<str
 export function getToolName(toolPath: string): string | null {
   const userMarkers = getToolMarkers('user');
   const workspaceMarkers = getToolMarkers('workspace');
-  const allMarkers = { ...userMarkers, ...workspaceMarkers };
 
-  for (const [name, path] of Object.entries(allMarkers)) {
-    if (toolPath === path) {
-      return name;
-    }
+  // Search user and workspace maps independently so that workspace keys
+  // do not overwrite user keys (they share the same key names but different paths).
+  for (const [name, path] of Object.entries(userMarkers)) {
+    if (toolPath === path) return name;
+  }
+  for (const [name, path] of Object.entries(workspaceMarkers)) {
+    if (toolPath === path) return name;
   }
   return null;
 }

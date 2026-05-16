@@ -1,0 +1,76 @@
+---
+slug: waslgenie-launch
+title: Introducing WaslGenie — Universal Sync for AI Orchestrators
+authors: [team]
+tags: [launch, ai, orchestrators, sync, agents, mcps]
+---
+
+# Introducing WaslGenie
+
+**The universal synchronization layer for AI agent orchestrators is here.**
+
+We've all been there. You build an agent in Claude Code. It doesn't exist in Gemini CLI. You create an MCP in one tool. It's gone in another. You copy-paste configs across five different orchestrators, hoping they stay in sync.
+
+Not anymore.
+
+{/* truncate */}
+
+## The Problem We're Solving
+
+Working across multiple AI orchestrators creates a painful workflow:
+
+- **Duplication**: Agents, MCPs, and configurations exist in multiple places
+- **Inconsistency**: Changes in one tool don't propagate to others
+- **Maintenance overhead**: Every update requires manual sync across all tools
+- **Lost productivity**: Time wasted copy-pasting instead of building
+
+## What is WaslGenie?
+
+WaslGenie is a daemon that scans all your AI orchestrators, discovers what you've built, and keeps everything in sync—without duplicating a single file.
+
+### How It Works
+
+1. **Install**: Register WaslGenie as a native skill in each orchestrator
+2. **Sync**: Scan all tools, discover agents and MCPs
+3. **Connect**: Write minimal stubs that reference originals
+4. **Watch**: Let the daemon auto-sync as you create and edit
+
+Your agents live where they were born. WaslGenie makes sure every tool can find them.
+
+## Key Features
+
+✅ **Multi-tool support** — Claude Code, Gemini CLI, OpenCode  
+✅ **Zero duplication** — Originals stay where they were created  
+✅ **Automatic sync** — Daemon watches and updates stubs on change  
+✅ **Conflict resolution** — Latest is greatest strategy  
+✅ **Zero friction** — Create where you're comfortable  
+
+## The MVP Is Here
+
+We're launching WaslGenie MVP with support for:
+
+- **Asset types**: Agents + MCPs
+- **Tools**: Claude Code, Gemini CLI, OpenCode
+- **Sync modes**: Manual command + daemon watching
+- **Scope**: User-level and workspace-level registry
+
+## Get Started
+
+```bash
+npx wasl-genie install      # First-time setup
+waslgenie sync              # Scan and sync your assets
+waslgenie status            # View everything
+waslgenie watch             # Auto-sync mode
+```
+
+## What's Next
+
+We're building toward v1.1 with additional asset types (skills, commands, crons), web dashboard, and expanded tool support.
+
+**Want to help shape the future?** Check out the [Contributing Guide](/contributing) or open an issue on [GitHub](https://github.com/The-Untitled-Org/wasla-genie).
+
+---
+
+**Your agents live where they were born. WaslGenie makes sure every tool can find them.**
+
+Star us on [GitHub](https://github.com/The-Untitled-Org/wasla-genie) if you're tired of copy-pasting configs.

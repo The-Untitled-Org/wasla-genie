@@ -1,3 +1,8 @@
+---
+
+
+---
+
 <div align="center">
 
 ```
@@ -11,9 +16,9 @@
 
 **وصل جيني** — *One skill layer. Every AI orchestrator. Zero duplication.*
 
-[![MIT License](https://img.shields.io/badge/license-MIT-00C896?style=flat-square)](LICENSE)
+[![MIT License](https://img.shields.io/badge/license-MIT-00C896?style=flat-square)](https://github.com/The-Untitled-Org/wasla-genie/blob/main/LICENSE)
 [![GitHub](https://img.shields.io/badge/github-The--Untitled--Org-00C896?style=flat-square&logo=github)](https://github.com/The-Untitled-Org/wasla-genie)
-[![Status](https://img.shields.io/badge/status-alpha-orange?style=flat-square)]()
+[![Status](https://img.shields.io/badge/status-alpha-orange?style=flat-square)](https://github.com/The-Untitled-Org/wasla-genie)
 [![Contributors](https://img.shields.io/github/contributors/The-Untitled-Org/wasla-genie?style=flat-square&color=00C896)](https://github.com/The-Untitled-Org/wasla-genie/graphs/contributors)
 
 </div>
@@ -224,7 +229,7 @@ review-pr          command    openclaw    claude ✔  gemini ✔  codex ✔  her
 | **Hermes** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Custom / BYO** | 🔧 | 🔧 | 🔧 | 🔧 | 🔧 |
 
-> Adding a new tool? See [Writing an Adapter](docs/adapters.md).
+> Adding a new tool? See [Writing an Adapter](/architecture/adapters).
 
 ---
 
@@ -273,9 +278,9 @@ wasl-genie/
 │       ├── openclaw.js
 │       └── hermes.js
 ├── docs/
-│   ├── how-stubs-work.md
-│   ├── adapters.md
-│   └── roadmap.md
+│   ├── /architecture/how-stubs-work
+│   ├── /architecture/adapters
+│   └── /roadmap
 ├── package.json
 └── README.md
 ```
@@ -297,16 +302,16 @@ Nothing is ever duplicated.
 ## 🤝 Contributing
 
 ```bash
-git clone https://github.com/mosaeedhammad/wasl-genie
-cd wasl-genie
+git clone https://github.com/The-Untitled-Org/wasla-genie
+cd wasla-genie
 npm install
 npm run dev
 ```
 
-- [Contributing Guide](CONTRIBUTING.md)
-- [How Stubs Work](docs/how-stubs-work.md)
-- [Writing an Adapter](docs/adapters.md)
-- [Roadmap](docs/roadmap.md)
+- [Contributing Guide](/contributing)
+- [How Stubs Work](/architecture/how-stubs-work)
+- [Writing an Adapter](/architecture/adapters)
+- [Roadmap](/roadmap)
 
 ---
 

@@ -1,0 +1,61 @@
+{
+  "name": "wasl-genie",
+  "version": "0.1.0",
+  "description": "Universal synchronization layer for AI agent orchestrators",
+  "type": "module",
+  "main": "dist/cli/index.js",
+  "bin": {
+    "waslgenie": "dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/cli/index.js",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:validation": "vitest run tests/validation",
+    "test:coverage": "vitest --coverage",
+    "docs": "cd docs && npm run start",
+    "docs:build": "cd docs && npm run build",
+    "lint": "tsc --noEmit",
+    "lint:check": "tsc --noEmit",
+    "lint:fix": "tsc --noEmit && prettier --write 'src/**/*.ts' 'tests/**/*.ts'",
+    "format": "prettier --write 'src/**/*.ts' 'tests/**/*.ts' '.prettierrc'",
+    "format:check": "prettier --check 'src/**/*.ts' 'tests/**/*.ts' '.prettierrc'",
+    "type:check": "tsc --noEmit",
+    "type:fix": "tsc --noEmit && prettier --write 'src/**/*.ts' 'tests/**/*.ts'",
+    "check": "npm run type:check && npm run format:check",
+    "fix": "npm run format && npm run lint:fix",
+    "clean": "rm -rf dist .nyc_output coverage",
+    "all": "npm run clean && npm run build && npm run check && npm test"
+  },
+  "keywords": [
+    "agents",
+    "orchestrators",
+    "sync",
+    "ai",
+    "claude",
+    "gemini",
+    "opencode"
+  ],
+  "author": "Mustafa BAHAA",
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "commander": "^11.1.0",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "@vitest/ui": "^1.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.0.0",
+    "prettier": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

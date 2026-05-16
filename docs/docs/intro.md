@@ -10,7 +10,7 @@ Welcome to WaslGenie — the universal synchronization layer for AI agent orches
 
 - **[Project Specification](/specs/project-spec)** — Complete product specification and design
 - **[Design Discussion](/specs/design-discussion)** — Deep-dive design decisions and rationale
-- **[Meetings of Mind](/mom/overview)** — Meeting notes from the design process
+- **[Meetings of Mind](/mom)** — Meeting notes from the design process
 
 ## What is WaslGenie?
 

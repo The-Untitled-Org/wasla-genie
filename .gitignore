@@ -1,8 +1,6 @@
 # Dependencies
 node_modules/
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
+# package-lock.json should be committed for consistent builds
 
 # Build
 dist/

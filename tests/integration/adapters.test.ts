@@ -112,48 +112,51 @@ describe.each([
   ['claude', ClaudeAdapter, 'Claude Code', 'md', 'json'],
   ['gemini', GeminiAdapter, 'Gemini CLI', 'md', 'json'],
   ['openclaw', OpenclawAdapter, 'OpenClaw', 'md', 'json'],
-] as const)('%s adapter — interface contract', (toolName, AdapterClass, displayName, agentFmt, mcpFmt) => {
-  let adapter: InstanceType<typeof AdapterClass>;
+] as const)(
+  '%s adapter — interface contract',
+  (toolName, AdapterClass, displayName, agentFmt, mcpFmt) => {
+    let adapter: InstanceType<typeof AdapterClass>;
 
-  beforeEach(() => {
-    adapter = new (AdapterClass as any)('workspace');
-  });
+    beforeEach(() => {
+      adapter = new (AdapterClass as any)('workspace');
+    });
 
-  it('has correct name', () => {
-    expect(adapter.name).toBe(toolName);
-  });
+    it('has correct name', () => {
+      expect(adapter.name).toBe(toolName);
+    });
 
-  it('has correct displayName', () => {
-    expect(adapter.displayName).toBe(displayName);
-  });
+    it('has correct displayName', () => {
+      expect(adapter.displayName).toBe(displayName);
+    });
 
-  it('has paths.agents string', () => {
-    expect(typeof adapter.paths.agents).toBe('string');
-    expect(adapter.paths.agents.length).toBeGreaterThan(0);
-  });
+    it('has paths.agents string', () => {
+      expect(typeof adapter.paths.agents).toBe('string');
+      expect(adapter.paths.agents.length).toBeGreaterThan(0);
+    });
 
-  it('has paths.mcp string', () => {
-    expect(typeof adapter.paths.mcp).toBe('string');
-    expect(adapter.paths.mcp.length).toBeGreaterThan(0);
-  });
+    it('has paths.mcp string', () => {
+      expect(typeof adapter.paths.mcp).toBe('string');
+      expect(adapter.paths.mcp.length).toBeGreaterThan(0);
+    });
 
-  it(`agents format is "${agentFmt}"`, () => {
-    expect(adapter.formats.agents).toBe(agentFmt);
-  });
+    it(`agents format is "${agentFmt}"`, () => {
+      expect(adapter.formats.agents).toBe(agentFmt);
+    });
 
-  it(`mcp format is "${mcpFmt}"`, () => {
-    expect(adapter.formats.mcp).toBe(mcpFmt);
-  });
+    it(`mcp format is "${mcpFmt}"`, () => {
+      expect(adapter.formats.mcp).toBe(mcpFmt);
+    });
 
-  it('isInstalled() returns a boolean', async () => {
-    const result = await adapter.isInstalled();
-    expect(typeof result).toBe('boolean');
-  });
+    it('isInstalled() returns a boolean', async () => {
+      const result = await adapter.isInstalled();
+      expect(typeof result).toBe('boolean');
+    });
 
-  it('isInstalled() never throws', async () => {
-    await expect(adapter.isInstalled()).resolves.not.toThrow();
-  });
-});
+    it('isInstalled() never throws', async () => {
+      await expect(adapter.isInstalled()).resolves.not.toThrow();
+    });
+  }
+);
 
 // ─── writeStub — agent type ───────────────────────────────────────────────────
 

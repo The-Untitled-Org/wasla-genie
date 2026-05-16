@@ -67,9 +67,7 @@ describe('Scanner.detectConflicts — stub vs original', () => {
 
   it('does NOT report a conflict when only one original exists (no stubs)', async () => {
     const scanner = new Scanner('workspace');
-    const discovered: DiscoveredFile[] = [
-      makeFile({ tool: 'claude', isStub: false }),
-    ];
+    const discovered: DiscoveredFile[] = [makeFile({ tool: 'claude', isStub: false })];
 
     const conflicts = await scanner.detectConflicts(discovered);
     expect(conflicts).toHaveLength(0);
@@ -122,9 +120,9 @@ describe('Scanner.detectConflicts — multiple originals (Latest-is-Greatest)', 
     ];
 
     const conflicts = await scanner.detectConflicts(discovered);
-    expect(conflicts[0].versions[0].tool).toBe('gemini');    // latest
+    expect(conflicts[0].versions[0].tool).toBe('gemini'); // latest
     expect(conflicts[0].versions[1].tool).toBe('openclaw');
-    expect(conflicts[0].versions[2].tool).toBe('claude');    // oldest
+    expect(conflicts[0].versions[2].tool).toBe('claude'); // oldest
   });
 
   it('reports 3 versions when 3 originals conflict', async () => {
@@ -175,8 +173,18 @@ describe('Scanner.detectConflicts — multiple originals (Latest-is-Greatest)', 
     const scanner = new Scanner('workspace');
     const now = Date.now();
     const discovered: DiscoveredFile[] = [
-      makeFile({ tool: 'claude', isStub: false, path: '~/.claude/agents/researcher.md', modifiedAt: now }),
-      makeFile({ tool: 'gemini', isStub: false, path: '~/.gemini/agents/researcher.md', modifiedAt: now + 1 }),
+      makeFile({
+        tool: 'claude',
+        isStub: false,
+        path: '~/.claude/agents/researcher.md',
+        modifiedAt: now,
+      }),
+      makeFile({
+        tool: 'gemini',
+        isStub: false,
+        path: '~/.gemini/agents/researcher.md',
+        modifiedAt: now + 1,
+      }),
     ];
 
     const conflicts = await scanner.detectConflicts(discovered);
@@ -194,7 +202,7 @@ describe('Scanner — grouping by name+type', () => {
     const scanner = new Scanner('workspace');
     const discovered: DiscoveredFile[] = [
       makeFile({ tool: 'claude', name: 'notion', type: 'agent', isStub: false, modifiedAt: 1000 }),
-      makeFile({ tool: 'gemini', name: 'notion', type: 'mcp',   isStub: false, modifiedAt: 2000 }),
+      makeFile({ tool: 'gemini', name: 'notion', type: 'mcp', isStub: false, modifiedAt: 2000 }),
     ];
 
     // notion|agent and notion|mcp are different keys → no conflict between them

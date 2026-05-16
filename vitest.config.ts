@@ -20,14 +20,17 @@ export default defineConfig({
     include: ['tests/**/*.test.ts'],
     exclude: ['node_modules', 'dist'],
     coverage: {
+      reportsDirectory: './output',
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'json-summary', 'lcov', 'html'],
+      include: ['src/**/*.ts'],
       exclude: [
         'node_modules/',
         'tests/',
         'dist/',
         '**/*.test.ts',
         '**/*.d.ts',
+        'src/cli/index.ts',   // CLI entry point — hard to unit test
       ],
     },
   },

@@ -189,9 +189,30 @@ describe('Latest-is-Greatest — conflict version ordering', () => {
     const scanner = new Scanner('workspace');
 
     const files: DiscoveredFile[] = [
-      { path: '/p1', isStub: false, tool: 'claude', type: 'agent', name: 'planner', modifiedAt: 100 },
-      { path: '/p2', isStub: false, tool: 'gemini', type: 'agent', name: 'planner', modifiedAt: 300 },
-      { path: '/p3', isStub: false, tool: 'openclaw', type: 'agent', name: 'planner', modifiedAt: 200 },
+      {
+        path: '/p1',
+        isStub: false,
+        tool: 'claude',
+        type: 'agent',
+        name: 'planner',
+        modifiedAt: 100,
+      },
+      {
+        path: '/p2',
+        isStub: false,
+        tool: 'gemini',
+        type: 'agent',
+        name: 'planner',
+        modifiedAt: 300,
+      },
+      {
+        path: '/p3',
+        isStub: false,
+        tool: 'openclaw',
+        type: 'agent',
+        name: 'planner',
+        modifiedAt: 200,
+      },
     ];
 
     const conflicts = await scanner.detectConflicts(files);
@@ -207,8 +228,22 @@ describe('Latest-is-Greatest — conflict version ordering', () => {
     const scanner = new Scanner('workspace');
 
     const files: DiscoveredFile[] = [
-      { path: '/p1', isStub: false, tool: 'claude', type: 'agent', name: 'researcher', modifiedAt: 1000 },
-      { path: '/p2', isStub: false, tool: 'gemini', type: 'agent', name: 'researcher', modifiedAt: 9999 },
+      {
+        path: '/p1',
+        isStub: false,
+        tool: 'claude',
+        type: 'agent',
+        name: 'researcher',
+        modifiedAt: 1000,
+      },
+      {
+        path: '/p2',
+        isStub: false,
+        tool: 'gemini',
+        type: 'agent',
+        name: 'researcher',
+        modifiedAt: 9999,
+      },
     ];
 
     const conflicts = await scanner.detectConflicts(files);

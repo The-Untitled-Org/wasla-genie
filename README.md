@@ -14,6 +14,7 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-00C896?style=flat-square)](LICENSE)
 [![GitHub](https://img.shields.io/badge/github-The--Untitled--Org-00C896?style=flat-square&logo=github)](https://github.com/The-Untitled-Org/wasla-genie)
 [![CI & Docs Deployment](https://github.com/The-Untitled-Org/wasla-genie/actions/workflows/ci-docs.yml/badge.svg)](https://github.com/The-Untitled-Org/wasla-genie/actions/workflows/ci-docs.yml)
+[![Coverage](https://codecov.io/gh/The-Untitled-Org/wasla-genie/branch/main/graph/badge.svg)](https://codecov.io/gh/The-Untitled-Org/wasla-genie)
 [![Status](https://img.shields.io/badge/status-alpha-orange?style=flat-square)]()
 [![Contributors](https://img.shields.io/github/contributors/The-Untitled-Org/wasla-genie?style=flat-square&color=00C896)](https://github.com/The-Untitled-Org/wasla-genie/graphs/contributors)
 

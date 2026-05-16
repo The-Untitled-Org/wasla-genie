@@ -8,7 +8,7 @@
     "waslagenie": "dist/cli/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run check && tsc",
     "dev": "tsc --watch",
     "start": "node dist/cli/index.js",
     "test": "vitest",
@@ -16,7 +16,8 @@
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
     "test:validation": "vitest run tests/validation",
-    "test:coverage": "vitest --coverage",
+    "test:coverage": "vitest run --coverage",
+    "coverage:open": "open output/index.html",
     "docs": "cd docs && npm run start",
     "docs:build": "cd docs && npm run build",
     "lint": "tsc --noEmit",
@@ -28,7 +29,7 @@
     "type:fix": "tsc --noEmit && prettier --write 'src/**/*.ts' 'tests/**/*.ts'",
     "check": "npm run type:check && npm run format:check",
     "fix": "npm run format && npm run lint:fix",
-    "clean": "rm -rf dist .nyc_output coverage",
+    "clean": "rm -rf dist .nyc_output output coverage",
     "all": "npm run clean && npm run build && npm run check && npm test"
   },
   "keywords": [
@@ -49,11 +50,11 @@
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
+    "@vitest/coverage-v8": "^1.6.1",
     "@vitest/ui": "^1.0.0",
-    "@vitest/coverage-v8": "^1.0.0",
+    "prettier": "^3.1.0",
     "typescript": "^5.3.3",
-    "vitest": "^1.0.0",
-    "prettier": "^3.1.0"
+    "vitest": "^1.6.1"
   },
   "engines": {
     "node": ">=18.0.0"

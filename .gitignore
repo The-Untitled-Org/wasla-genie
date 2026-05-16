@@ -43,6 +43,7 @@ yarn-error.log*
 # .gemini/GEMINI.md - documentation for Gemini
 
 # Testing
+output/
 coverage/
 .nyc_output/
 

@@ -50,12 +50,14 @@ The original file never moves. The tool that created it owns it forever.
 
 ```bash
 npx wasl-genie install     # detect tools, register WaslGenie skill in each
-waslgenie sync             # scan, discover, write stubs
+waslgenie sync             # manual: scan, discover, write stubs (also called automatically on tool open)
 waslgenie status           # show all discovered assets and stub state
 waslgenie config           # set scope (user vs workspace)
 ```
 
-Daemon mode (`waslgenie watch`) is explicitly **out of MVP scope**.
+**Sync trigger:** Tool-open trigger. When user opens Claude Code, Gemini CLI, or OpenClaw, WaslGenie skill automatically runs `waslgenie sync --quick`. Manual `waslgenie sync` is also available anytime.
+
+No persistent daemon in MVP scope.
 
 ---
 
@@ -63,12 +65,9 @@ Daemon mode (`waslgenie watch`) is explicitly **out of MVP scope**.
 
 ### 3.1 The Stub Mechanism
 
-WaslGenie never copies or duplicates asset files. Instead it writes a **stub** — a minimal valid file in the native format of the target tool — that either:
+WaslGenie writes **stubs** — valid files in the native format of the target tool — that contain the **full mirrored content** from the original asset file, plus WaslGenie metadata.
 
-- **Option A (preferred):** Points to the original file using a native reference the tool understands
-- **Option B (fallback):** Mirrors the full content from the original, managed and kept in sync by WaslGenie
-
-Each adapter must declare which option its tool supports. WaslGenie uses Option A where supported, falls back to Option B automatically.
+**Note on native references:** Research revealed that none of the three MVP tools (Claude Code, Gemini CLI, OpenClaw) support native path references (`@import`, etc.) in agent/MCP definition files. Therefore, **MVP uses Option B (content mirror) exclusively**. Future versions may explore Option A or Option C (instruction-based delegation) if tool support evolves.
 
 ```
 ORIGINAL                          STUB (written by WaslGenie)
@@ -87,19 +86,7 @@ ORIGINAL                          STUB (written by WaslGenie)
 3. **Never confused with originals** — registry tracks which files are originals and which are stubs
 4. **Never written over an existing non-stub file** — conflict resolution required first
 
-**Example — Option A stub (native reference supported):**
-```markdown
----
-# researcher
-waslgenie: true
-origin_tool: gemini
-origin_path: ~/.gemini/agents/researcher.md
----
-
-@import ~/.gemini/agents/researcher.md
-```
-
-**Example — Option B stub (full content mirror):**
+**Example — MVP stub (content mirror):**
 ```markdown
 ---
 # researcher
@@ -107,11 +94,19 @@ waslgenie: true
 origin_tool: gemini
 origin_path: ~/.gemini/agents/researcher.md
 synced_at: 2026-01-15T14:32:01Z
+content_hash: "abc123def456"
 ---
 
 You are a researcher agent. Your job is to...
 [full content mirrored from origin and kept in sync by WaslGenie]
 ```
+
+**Key fields:**
+- `waslgenie: true` — identifies this as a WaslGenie-managed stub
+- `origin_tool` — which tool owns the original
+- `origin_path` — absolute path to the original file
+- `synced_at` — timestamp of last sync (used to detect stale stubs)
+- `content_hash` — SHA256 of original content (used to detect divergence)
 
 ---
 
@@ -155,15 +150,15 @@ A conflict occurs when two tools both have a non-stub asset with the same name.
 
 WaslGenie scans known config directories for each installed tool:
 
-| Tool | Agents Path | MCP Path |
-|---|---|---|
-| Claude Code | `~/.claude/agents/` | `~/.claude/mcp/` |
-| OpenClaw | `~/.openclaw/agents/` | `~/.openclaw/mcp/` |
-| Gemini CLI | `~/.gemini/agents/` | `~/.gemini/mcp/` |
-| *(v1.1)* Codex | `~/.codex/agents/` | `~/.codex/mcp/` |
-| *(v1.1)* Hermes | `~/.hermes/agents/` | `~/.hermes/mcp/` |
+| Tool | Agents Path | MCP Path | Status |
+|---|---|---|---|
+| **Claude Code** | `~/.claude/agents/` | `~/.claude/mcp/` (or `~/.claude/claude.json`) | ✅ Confirmed |
+| **OpenClaw** | `~/.openclaw/agents/` | `~/.openclaw/mcp/` (TBD) | ⚠️ Needs research |
+| **Gemini CLI** | `~/.gemini/agents/` | `~/.gemini/settings.json` (key: `mcpServers`) | ✅ Confirmed |
+| *(v1.1)* Codex | `~/.codex/agents/` | `~/.codex/mcp/` | — |
+| *(v1.1)* Hermes | `~/.hermes/agents/` | `~/.hermes/mcp/` | — |
 
-> **Note:** Exact paths for OpenClaw, Gemini CLI, Codex, and Hermes must be researched and confirmed before adapter implementation. Each adapter's path config is the first thing to verify against the real tool.
+> **Critical note for OpenClaw:** Exact MCP config path/format must be researched and confirmed before OpenClaw adapter implementation. This is blocking.
 
 ---
 
@@ -233,7 +228,8 @@ The registry is WaslGenie's single source of truth about everything it has disco
         {
           "tool": "openclaw",
           "path": "~/.openclaw/agents/researcher.md",
-          "method": "option_a",
+          "method": "content_mirror",
+          "content_hash": "abc123def456",
           "written_at": "2026-01-15T14:32:01Z",
           "status": "active"
         }
@@ -275,17 +271,11 @@ interface WaslGenieAdapter {
     mcp: 'md' | 'yaml' | 'json'
   }
 
-  // Does this tool support native path references?
-  supportsNativeRef: {
-    agents: boolean
-    mcp: boolean
-  }
-
   // How to detect if tool is installed
   isInstalled(): Promise<boolean>
 
-  // How to write a stub for this tool
-  writeStub(asset: Asset, method: 'option_a' | 'option_b'): Promise<void>
+  // How to write a content-mirror stub for this tool
+  writeStub(asset: Asset): Promise<void>
 
   // How to register WaslGenie as a native skill in this tool
   installSkill(): Promise<void>
@@ -326,8 +316,15 @@ Runs once on first setup.
 
 ---
 
-### `waslgenie sync`
+### `waslgenie sync` (manual or auto-triggered)
 
+Manual invocation:
+```bash
+waslgenie sync              # Full scan and sync
+waslgenie sync --quick      # Fast check (mtime-based, called by tool-open trigger)
+```
+
+Example output:
 ```
 🔍  Scanning...
 
@@ -335,6 +332,8 @@ Runs once on first setup.
   ~/.claude/mcp/        →  1 original found
   ~/.openclaw/agents/   →  1 original found
   ~/.openclaw/mcp/      →  0 originals found
+  ~/.gemini/agents/     →  1 original found
+  ~/.gemini/settings.json → 1 MCP config found
 
 ⚠️  Conflict: agent "researcher" exists in both claude and openclaw
     Resolve before continuing? (y/n) › y
@@ -347,14 +346,16 @@ Runs once on first setup.
 
 ✍️  Writing stubs...
 
-  ~/.openclaw/agents/researcher.md    ✔  (option_b — content mirror)
-  ~/.openclaw/agents/planner.md       ✔  (option_b — content mirror)
-  ~/.openclaw/mcp/notion.json         ✔  (option_a — native ref)
-  ~/.claude/agents/data-analyst.md    ✔  (option_b — content mirror)
+  ~/.openclaw/agents/researcher.md    ✔  (content mirror)
+  ~/.openclaw/agents/planner.md       ✔  (content mirror)
+  ~/.claude/agents/gemini-research.md ✔  (content mirror, from gemini original)
+  ~/.gemini/agents/claude-planner.md  ✔  (content mirror, from claude original)
 
 ✨  Sync complete
     4 stubs written · 0 files duplicated · 1 conflict resolved
 ```
+
+**Note:** This command is called automatically whenever a tool launches (via WaslGenie skill), and can also be called manually anytime.
 
 ---
 
@@ -404,26 +405,70 @@ WaslGenie will only ever touch content between its own markers. Everything outsi
 
 ## 9. Open Research Items
 
-These must be answered before writing adapter code:
+**Research status: Partially complete. Blocking items identified below.**
+
+### Resolved ✅
+
+- ✅ Claude Code agent format — Markdown + YAML frontmatter confirmed
+- ✅ Claude Code MCP format — `~/.claude/mcp/` or `~/.claude/claude.json` 
+- ✅ Claude native ref support — **NO** (research revealed `@import` only works in `CLAUDE.md`, not agent files)
+- ✅ Gemini CLI agent format — Markdown + YAML frontmatter confirmed
+- ✅ Gemini CLI MCP format — **NOT a directory.** Embedded in `~/.gemini/settings.json` under `mcpServers: {}`
+- ✅ Gemini native ref support — **NO** (same finding as Claude)
+
+### Blocking 🔴
 
 | Item | Question | Priority |
 |---|---|---|
-| Claude Code agent format | Exact file format and frontmatter spec for `~/.claude/agents/` | 🔴 Critical |
-| Claude Code MCP format | Exact format for `~/.claude/mcp/` | 🔴 Critical |
-| Claude native ref support | Does Claude support `@import` or any path reference in agent files? | 🔴 Critical |
 | OpenClaw agent format | Exact file format for OpenClaw agents | 🔴 Critical |
-| OpenClaw MCP format | Exact format for OpenClaw MCP config | 🔴 Critical |
+| OpenClaw MCP path | **CRITICAL:** Where does OpenClaw store MCP configs? File path and format. | 🔴 Critical |
 | OpenClaw native ref support | Does OpenClaw support native path references? | 🔴 Critical |
-| Gemini CLI agent format | Exact file format and frontmatter spec for `~/.gemini/agents/` | 🔴 Critical |
-| Gemini CLI MCP format | Exact format for `~/.gemini/mcp/` | 🔴 Critical |
-| Gemini native ref support | Does Gemini CLI support native path references in agent files? | 🔴 Critical |
-| Claude skill install | How to register a skill in Claude Code programmatically | 🟡 High |
 | OpenClaw skill install | How to register a skill in OpenClaw programmatically | 🟡 High |
 | Gemini skill install | How to register a skill in Gemini CLI programmatically | 🟡 High |
+| Claude skill install | How to register a skill in Claude Code programmatically | 🟡 High |
+
+**Note:** OpenClaw is the critical blocker. Its MCP storage format differs from Claude/Gemini and must be confirmed before adapter implementation.
 
 ---
 
-## 10. Project Structure
+## 10. Transformers Concept (MVP)
+
+**Transformers** = A system for maintaining format consistency and handling vendor updates.
+
+### Use Cases
+
+1. **Format conversion:** An MCP defined in Gemini format must be converted to Claude format when synced to Claude
+2. **Vendor updates:** When a vendor releases a new version of an MCP, transformers auto-detect and re-sync
+3. **Vendor-specific rules:** Different tools may require different syntax, fields, or structure
+
+### Transformer Implementation
+
+Each adapter can define **transformation rules** for how assets are mirrored to other tools:
+
+```typescript
+interface Transformer {
+  sourceFormat: 'claude' | 'gemini' | 'openclaw'
+  targetFormat: 'claude' | 'gemini' | 'openclaw'
+  
+  // Convert from source format to target format
+  transform(content: string, metadata: AssetMetadata): string
+  
+  // Detect vendor version changes
+  getVersion(asset: Asset): string
+  
+  // Handle format-specific fields
+  extractFields(content: string): Record<string, any>
+  mergeFields(fields: Record<string, any>, format: string): string
+}
+```
+
+### MVP Scope for Transformers
+
+In MVP, transformers are **basic pass-through** — content is mirrored without modification, with metadata preserved in stub headers. Format-specific handling and auto-updates are deferred to v1.1+.
+
+---
+
+## 11. Project Structure
 
 ```
 wasl-genie/
@@ -461,36 +506,42 @@ wasl-genie/
 
 ---
 
-## 11. Roadmap
+## 12. Roadmap
 
 ### v0.1 — MVP
-- Claude Code + OpenClaw + Gemini CLI support
-- Agents + MCPs sync
-- Manual sync only
-- Conflict resolution (interactive)
-- Orphan handling (.bak)
-- User + workspace scope
-- `npx wasl-genie install`
+- ✅ Claude Code + OpenClaw + Gemini CLI support
+- ✅ Agents + MCPs sync (content mirror strategy)
+- ✅ Tool-open auto-trigger (via WaslGenie skill)
+- ✅ Manual sync (`waslgenie sync`) also available
+- ✅ Conflict resolution (interactive)
+- ✅ Orphan handling (.bak)
+- ✅ User + workspace scope
+- ✅ `npx wasl-genie install`
+- ✅ Export/import for backup (`waslgenie export`, `waslgenie import`)
+- 🔄 Transformers concept (format conversion + vendor updates)
 
 ### v1.1
 - Codex + Hermes adapters
 - Skills + Commands + Cron sync
-- `waslgenie watch` daemon mode
-- Auto-sync on tool open (where supported)
+- Multi-profile support
+- `waslgenie watch` daemon mode (persistent background sync)
+- Skill store integration
 
 ### v1.2
-- Team/remote sync
-- WaslGenie skill store submission (when stores launch)
+- Team collaboration features (shared repos, team profiles)
+- Remote/cross-machine sync
 - Web UI for status dashboard
+- Advanced transformers (custom vendor plugins)
 
 ---
 
-## 12. Non-Goals (MVP)
+## 13. Non-Goals (MVP)
 
-- ❌ Remote or cross-machine sync
-- ❌ Daemon / file watching
-- ❌ Skills, commands, cron sync
-- ❌ Gemini CLI, Codex, Hermes support
+- ❌ Persistent daemon / file watching (tool-open trigger is sufficient)
+- ❌ Skills, commands, cron sync (agents + MCPs only)
+- ❌ Codex, Hermes support (Claude Code, Gemini CLI, OpenClaw only)
 - ❌ Conflict auto-resolution (always interactive)
 - ❌ GUI or web dashboard
-- ❌ Team collaboration features
+- ❌ Team collaboration features (leave it to users to manage ~/.waslgenie/ with git)
+- ❌ Multi-profile support (single default profile only)
+- ❌ Remote or cross-machine sync (handled by export/import)

@@ -99,10 +99,30 @@ describe('RegistryManager.load — default registry', () => {
 
 // ─── get() — error before load ───────────────────────────────────────────────
 
-describe('RegistryManager.get — before load', () => {
+describe('RegistryManager uninitialized errors & invalid json', () => {
   it('throws if get() is called before load()', () => {
     const registry = new RegistryManager('workspace');
     expect(() => registry.get()).toThrow('Registry not loaded');
+  });
+
+  it('throws if save() is called before load()', async () => {
+    const registry = new RegistryManager('workspace');
+    await expect(registry.save()).rejects.toThrow('Registry not loaded');
+  });
+
+  it('load() recovers with default registry if file exists but is invalid JSON', async () => {
+    const { writeText, ensureDir } = await import('@utils/fs');
+    const { getRegistryPath, getRegistryDir } = await import('@utils/paths');
+    const path = getRegistryPath('workspace');
+    const dir = getRegistryDir('workspace');
+
+    await ensureDir(dir);
+    await writeText(path, '{ invalid json }');
+
+    const registry = new RegistryManager('workspace');
+    const data = await registry.load();
+    expect(data.config.version).toBe('0.1.0');
+    expect(data.assets).toEqual([]);
   });
 });
 

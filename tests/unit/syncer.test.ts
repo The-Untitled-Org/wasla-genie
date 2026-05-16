@@ -140,23 +140,84 @@ describe('Syncer.sync — Latest-is-Greatest with file fixtures', () => {
   });
 });
 
-// ─── Latest-is-Greatest ordering logic (unit, no FS) ────────────────────────
+// ─── Core Sync Loop & Mocking ──────────────────────────────────────────────────
 
-describe('Syncer — Latest-is-Greatest ordering', () => {
-  /**
-   * The Syncer internally sorts discovered files by modifiedAt descending
-   * and picks index 0 as the "latest". We test this indirectly by calling
-   * sync() and inspecting what lands in the registry.
-   */
+describe('Syncer — core sync() logic', () => {
+  it('groups, writes missing stubs, updates registry, and logs interactive prompts', async () => {
+    const { vi } = await import('vitest');
+    const { readText, writeText, ensureDir } = await import('@utils/fs');
+    const fsMock = vi.mocked(await import('@utils/fs'));
 
-  it('sorts correctly: highest mtime wins (smoke test via sync result)', async () => {
+    // Setup a fake registry & scanner
     const registry = new RegistryManager('workspace');
+    await registry.load(); // populate initial state
     const scanner = new Scanner('workspace');
-    const syncer = new Syncer(registry, scanner, 'workspace');
 
-    const result = await syncer.sync(false);
-    // Simply assert it runs without error and returns sensible data
-    expect(result.assetsDiscovered).toBeGreaterThanOrEqual(0);
+    // Mock paths to match our latest.path
+    const pathUtils = await import('@utils/paths');
+    vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
+      claude: '/claude',
+      gemini: '/gemini',
+      openclaw: '/openclaw',
+      codex: '/codex',
+    });
+
+    // Mock scanner.detectInstalledTools
+    vi.spyOn(scanner, 'detectInstalledTools').mockResolvedValue(['claude', 'gemini']);
+
+    // Mock fs functions
+    const readSpy = vi.spyOn(fsMock, 'readText').mockResolvedValue('Latest Gemini Content');
+    const writeSpy = vi.spyOn(fsMock, 'writeText').mockResolvedValue(undefined);
+    vi.spyOn(fsMock, 'ensureDir').mockResolvedValue(undefined);
+
+    // Provide a match for the targetPath condition
+    vi.spyOn(scanner, 'scanAllTools').mockResolvedValue([
+      {
+        name: 'researcher',
+        type: 'agent',
+        path: '/gemini/agents/researcher.md',
+        modifiedAt: 5000,
+        tool: 'gemini',
+      },
+      {
+        name: 'researcher',
+        type: 'agent',
+        path: '/claude/researcher.md',
+        modifiedAt: 1000,
+        tool: 'claude',
+      },
+    ]);
+    vi.spyOn(fsMock, 'ensureDir').mockResolvedValue(undefined);
+
+    // Spy on console to check interactive logging
+    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const syncer = new Syncer(registry, scanner, 'workspace');
+    const result = await syncer.sync(true); // interactive = true
+
+    expect(result.assetsDiscovered).toBe(1); // 'researcher|agent'
+    expect(result.stubsWritten).toBeGreaterThanOrEqual(1); // wrote to claude
+
+    // The Gemini version had mtime 5000, so it should read that one
+    expect(readSpy).toHaveBeenCalledWith('/gemini/agents/researcher.md');
+
+    // It should have logged the interactive message
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Syncing researcher (agent) using latest version from gemini')
+    );
+
+    // Now check if registry updated properly
+    const asset = registry.findAsset('researcher', 'agent');
+    expect(asset).toBeDefined();
+    expect(asset?.last_modified_at).toBe(5000);
+    expect(asset?.stubs.length).toBe(1); // One stub (claude), Gemini was skipped (source)
+
+    // Now run it again to hit the "asset already exists, update stubs" block
+    await syncer.sync(false); // interactive = false
+    expect(registry.findAsset('researcher', 'agent')?.stubs.length).toBe(1);
+
+    // Restore mocks
+    vi.restoreAllMocks();
   });
 });
 

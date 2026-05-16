@@ -30,7 +30,8 @@ export default defineConfig({
         'dist/',
         '**/*.test.ts',
         '**/*.d.ts',
-        'src/cli/index.ts',   // CLI entry point — hard to unit test
+        'src/cli/index.ts',
+        'src/cli/commands/**',
       ],
     },
   },

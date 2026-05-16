@@ -368,3 +368,98 @@ describe('Adapter scope — user vs workspace paths', () => {
     expect(ws.paths.agents).not.toBe(user.paths.agents);
   });
 });
+// ─── installSkill (idempotency & correctness) ──────────────────────────────────
+
+describe('ClaudeAdapter.installSkill', () => {
+  let tmpBase: string;
+  beforeEach(async () => {
+    tmpBase = await makeTmpDir();
+  });
+  afterEach(async () => {
+    await rm(tmpBase, { recursive: true, force: true });
+  });
+
+  it('creates CLAUDE.md if not exists and adds block', async () => {
+    const { vi } = await import('vitest');
+    const pathUtils = await import('@utils/paths');
+    vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
+      claude: tmpBase,
+      gemini: '',
+      openclaw: '',
+      codex: '',
+    });
+
+    const adapter = new ClaudeAdapter('workspace');
+    await adapter.installSkill();
+
+    const claudeMdPath = join(tmpBase, 'CLAUDE.md');
+    expect(await fileExists(claudeMdPath)).toBe(true);
+    const content = await readText(claudeMdPath);
+    expect(content).toContain('## WaslaGenie');
+    expect(content).toContain('<!-- waslagenie:start -->');
+
+    vi.restoreAllMocks();
+  });
+
+  it('does not double-add if block exists', async () => {
+    const { vi } = await import('vitest');
+    const pathUtils = await import('@utils/paths');
+    vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
+      claude: tmpBase,
+      gemini: '',
+      openclaw: '',
+      codex: '',
+    });
+
+    const adapter = new ClaudeAdapter('workspace');
+    const claudeMdPath = join(tmpBase, 'CLAUDE.md');
+    const original =
+      'Existing content\n<!-- waslagenie:start -->\n## WaslaGenie\n<!-- waslagenie:end -->\nFooter';
+    await writeText(claudeMdPath, original);
+
+    await adapter.installSkill();
+    const updated = await readText(claudeMdPath);
+    expect(updated).toBe(original); // Should not change
+
+    vi.restoreAllMocks();
+  });
+});
+
+describe('GeminiAdapter.installSkill', () => {
+  let tmpBase: string;
+  beforeEach(async () => {
+    tmpBase = await makeTmpDir();
+  });
+  afterEach(async () => {
+    await rm(tmpBase, { recursive: true, force: true });
+  });
+
+  it('appends to GEMINI.md if it exists', async () => {
+    const { vi } = await import('vitest');
+    const pathUtils = await import('@utils/paths');
+    vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
+      claude: '',
+      gemini: tmpBase,
+      openclaw: '',
+      codex: '',
+    });
+
+    const adapter = new GeminiAdapter('workspace');
+    const geminiMdPath = join(tmpBase, 'GEMINI.md');
+    await writeText(geminiMdPath, 'Existing content');
+
+    await adapter.installSkill();
+    const content = await readText(geminiMdPath);
+    expect(content).toContain('Existing content');
+    expect(content).toContain('## WaslaGenie');
+
+    vi.restoreAllMocks();
+  });
+});
+
+describe('OpenclawAdapter.installSkill', () => {
+  it('does nothing (no-op for now)', async () => {
+    const adapter = new OpenclawAdapter('workspace');
+    await expect(adapter.installSkill()).resolves.toBeUndefined();
+  });
+});

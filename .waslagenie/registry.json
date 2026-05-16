@@ -1,5 +1,21 @@
 {
-  "assets": [],
+  "assets": [
+    {
+      "id": "648a0b01-081d-48f7-a4dd-377dae92ba3d",
+      "name": "researcher",
+      "type": "agent",
+      "last_modified_at": 5000,
+      "last_synced_at": "2026-05-16T22:56:14.605Z",
+      "stubs": [
+        {
+          "tool": "claude",
+          "path": "/claude/agents/researcher.md",
+          "written_at": "2026-05-16T22:56:14.605Z",
+          "hash": "f933c0f040fb4de6e176e45deadf165b12e90e418df1a7a3a7f29ec964bc42cc"
+        }
+      ]
+    }
+  ],
   "conflicts": [],
   "config": {
     "scope": "workspace",

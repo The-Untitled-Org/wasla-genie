@@ -215,8 +215,81 @@ describe('fs helpers — path string functions', () => {
       expect(getFileExtension('config.json')).toBe('json');
     });
 
-    it('returns empty string for no extension', () => {
-      expect(getFileExtension('noext')).toBe('');
+    it('getFileExtension returns empty string for files without extension', () => {
+      expect(getFileExtension('path/to/README')).toBe('');
     });
+  });
+});
+
+describe('fs helpers — filesystem interaction', () => {
+  let tmpBase: string;
+
+  beforeEach(async () => {
+    const { mkdtemp } = await import('fs/promises');
+    const { tmpdir } = await import('os');
+    const { join } = await import('path');
+    tmpBase = await mkdtemp(join(tmpdir(), 'waslagenie-fs-test-'));
+  });
+
+  afterEach(async () => {
+    const { rm } = await import('fs/promises');
+    await rm(tmpBase, { recursive: true, force: true });
+  });
+
+  it('isDirectory returns true for directories and false for files or missing paths', async () => {
+    const { ensureDir, writeText, isDirectory } = await import('@utils/fs');
+    const { join } = await import('path');
+    const dir = join(tmpBase, 'dir');
+    const file = join(tmpBase, 'file.txt');
+
+    await ensureDir(dir);
+    await writeText(file, 'test');
+
+    expect(await isDirectory(dir)).toBe(true);
+    expect(await isDirectory(file)).toBe(false);
+    expect(await isDirectory(join(tmpBase, 'missing'))).toBe(false);
+  });
+
+  it('listFiles returns files with or without extension filtering', async () => {
+    const { ensureDir, writeText, listFiles } = await import('@utils/fs');
+    const { join } = await import('path');
+
+    await ensureDir(tmpBase);
+    await writeText(join(tmpBase, 'a.txt'), 'test');
+    await writeText(join(tmpBase, 'b.md'), 'test');
+    await ensureDir(join(tmpBase, 'c.dir'));
+
+    const all = await listFiles(tmpBase);
+    expect(all).toContain('a.txt');
+    expect(all).toContain('b.md');
+    expect(all).not.toContain('c.dir'); // ignores dirs
+
+    const txts = await listFiles(tmpBase, '.txt');
+    expect(txts).toContain('a.txt');
+    expect(txts).not.toContain('b.md');
+  });
+
+  it('listFiles returns empty array on error', async () => {
+    const { listFiles } = await import('@utils/fs');
+    expect(await listFiles('/path/does/not/exist/123')).toEqual([]);
+  });
+
+  it('listDirs returns only directories', async () => {
+    const { ensureDir, writeText, listDirs } = await import('@utils/fs');
+    const { join } = await import('path');
+
+    await ensureDir(join(tmpBase, 'dir1'));
+    await ensureDir(join(tmpBase, 'dir2'));
+    await writeText(join(tmpBase, 'a.txt'), 'test');
+
+    const dirs = await listDirs(tmpBase);
+    expect(dirs).toContain('dir1');
+    expect(dirs).toContain('dir2');
+    expect(dirs).not.toContain('a.txt');
+  });
+
+  it('listDirs returns empty array on error', async () => {
+    const { listDirs } = await import('@utils/fs');
+    expect(await listDirs('/path/does/not/exist/123')).toEqual([]);
   });
 });

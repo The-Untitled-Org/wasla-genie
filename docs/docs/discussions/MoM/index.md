@@ -8,8 +8,8 @@ This section contains meeting notes (MoMs) documenting key decisions and discuss
 
 ## MoM Index
 
-- **[MoM - May 16, 2026](./2026-05-16.md)** — Initial MVP scope, tool selection, stub strategy, conflict resolution
-- **[MoM - May 15, 2026](./2026-05-15.md)** — Architectural pivot and "Latest is Greatest" strategy definition
+- **[MoM — May 16, 2026](./2026-05-16.md)** — Initial MVP scope, tool selection, stub strategy, conflict resolution
+- **[MoM — May 15, 2026](./2026-05-15.md)** — Architectural pivot and "Latest is Greatest" strategy definition
 
 ## What Are Meetings of Mind?
 

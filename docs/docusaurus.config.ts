@@ -102,11 +102,11 @@ const config: Config = {
             },
             {
               label: 'Design Discussion',
-              to: '/specs/design-discussion',
+              to: '/discussions/ai-discussions',
             },
             {
               label: 'Meetings of Mind',
-              to: '/mom',
+              to: '/discussions/MoM',
             },
           ],
         },

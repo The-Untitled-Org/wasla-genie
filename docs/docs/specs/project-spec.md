@@ -1,8 +1,3 @@
----
-sidebar_position: 1
-title: Product Specification
----
-
 # WaslaGenie — Product Specification
 > Version: 0.1 — MVP Spec  
 > Author: Mosaeed Hammad  
@@ -39,15 +34,26 @@ The original file never moves. The tool that created it owns it forever.
 
 ### 2.2 Supported Orchestrators — MVP
 
+#### CLI / Terminal Agents
+
 | Tool | MVP | Post-MVP |
 |---|---|---|
 | **Claude Code** | ✅ | — |
-| **OpenClaw** | ✅ | — |
 | **Gemini CLI** | ✅ | — |
-| OpenAI Codex | — | v1.1 |
+| **OpenAI Codex CLI** | ✅ | — |
+| **OpenClaw** | ✅ | — |
 | Hermes | — | v1.1 |
 
-**Rationale:** Claude Code, OpenClaw, and Gemini CLI give us three meaningfully different tool formats to prove the adapter pattern. If the adapter works across three distinct formats, the pattern scales.
+**Rationale:** Claude Code, Gemini CLI, OpenAI Codex CLI, and OpenClaw represent the four most-used terminal-based AI agents in developer communities. Proving the adapter pattern across four meaningfully different formats validates the architecture for the long tail.
+
+#### IDE-based Agents
+
+| Tool | MVP | Post-MVP |
+|---|---|---|
+| Cursor | — | v1.1 |
+| GitHub Copilot | — | v1.1 |
+
+**Rationale:** IDE-based tools store configs differently from CLI tools (workspace `.cursor/rules/`, `.github/copilot-instructions.md`, VS Code settings). They require a separate integration approach and are deferred to v1.1 once the CLI adapter pattern is stable.
 
 ---
 
@@ -60,9 +66,9 @@ waslagenie status           # show all discovered assets and stub state
 waslagenie config           # set scope (user vs workspace)
 ```
 
-**Sync trigger:** Tool-open trigger. When user opens Claude Code, Gemini CLI, or OpenClaw, WaslaGenie skill automatically runs `waslagenie sync --quick`. Manual `waslagenie sync` is also available anytime.
+**Sync trigger:** Session-scoped background sync. When a tool starts, the WaslaGenie skill installed in that tool **launches WaslaGenie as a background co-process**. WaslaGenie watches for file changes across all tool directories and syncs in real time. It exits cleanly when the tool closes. This is not a persistent system daemon — it only runs while a supported tool is active.
 
-No persistent daemon in MVP scope.
+Manual `waslagenie sync` is also available anytime for a one-shot full scan.
 
 ---
 
@@ -125,7 +131,32 @@ You are a researcher agent. Your job is to...
 
 ---
 
-### 3.4 "Latest is Greatest" Sync Strategy
+### 3.4 Gradual Centralization
+
+WaslaGenie respects the zero-friction principle: assets live where the user created them. No migration is required on day one.
+
+However, WaslaGenie provides an **optional path toward centralization** over time:
+
+1. **Day 0 (MVP):** Assets live in native tool directories (`~/.claude/agents/`, `~/.gemini/agents/`, etc.). WaslaGenie syncs via stubs. `~/.waslagenie/` is used for registry and config only.
+
+2. **Gradual migration (optional):** Users can migrate individual assets to `~/.waslagenie/assets/` using `waslagenie migrate`. Stubs in tool directories then point to `~/.waslagenie/` as the source. No disruption to daily workflow.
+
+3. **Full centralization (optional end state):** All assets in `~/.waslagenie/`. Backup is a single `waslagenie export`. New machine setup is `waslagenie import`. Team sharing (v1.2) becomes practical.
+
+**Key principle:** Centralization is never forced. Users who never run `waslagenie migrate` experience no difference. Users who do migrate gain portability without losing any tool-native workflow.
+
+**Commands (MVP + post-MVP):**
+
+```bash
+waslagenie status                              # see where every asset currently lives
+waslagenie migrate <name> --to ~/.waslagenie/  # (post-MVP) move asset to central location
+waslagenie export                              # bundle all assets for backup/portability
+waslagenie import backup.tar                  # restore on a new machine
+```
+
+---
+
+### 3.5 "Latest is Greatest" Sync Strategy
 
 No explicit conflict resolution needed. Instead, WaslaGenie uses **modification time (mtime)** to determine source of truth:
 
@@ -166,15 +197,24 @@ Agent "researcher" found in 3 locations:
 
 WaslaGenie scans known config directories for each installed tool:
 
+#### CLI / Terminal Agents
+
 | Tool | Agents Path | MCP Path | Status |
 |---|---|---|---|
 | **Claude Code** | `~/.claude/agents/` | `~/.claude/mcp/` (or `~/.claude/claude.json`) | ✅ Confirmed |
-| **OpenClaw** | `~/.openclaw/agents/` | `~/.openclaw/mcp/` (TBD) | ⚠️ Needs research |
 | **Gemini CLI** | `~/.gemini/agents/` | `~/.gemini/settings.json` (key: `mcpServers`) | ✅ Confirmed |
-| *(v1.1)* Codex | `~/.codex/agents/` | `~/.codex/mcp/` | — |
+| **OpenAI Codex CLI** | `~/.codex/agents/` | `~/.codex/mcp/` | ⚠️ Needs research |
+| **OpenClaw** | `~/.openclaw/agents/` | `~/.openclaw/mcp/` (TBD) | ⚠️ Needs research |
 | *(v1.1)* Hermes | `~/.hermes/agents/` | `~/.hermes/mcp/` | — |
 
-> **Critical note for OpenClaw:** Exact MCP config path/format must be researched and confirmed before OpenClaw adapter implementation. This is blocking.
+> **Critical note for OpenClaw and Codex CLI:** Exact MCP config paths/formats must be researched and confirmed before adapter implementation. These are blocking for their respective adapters.
+
+#### IDE-based Agents *(v1.1)*
+
+| Tool | Agent/Rules Path | MCP / Extensions Config | Status |
+|---|---|---|---|
+| **Cursor** | `.cursor/rules/` (workspace) | `.cursor/mcp.json` | ⚠️ Needs research |
+| **GitHub Copilot** | `.github/copilot-instructions.md` | VS Code settings (`extensions.json`) | ⚠️ Needs research |
 
 ---
 
@@ -541,22 +581,24 @@ wasla-genie/
 ## 12. Roadmap
 
 ### v0.1 — MVP
-- ✅ Claude Code + OpenClaw + Gemini CLI support
+- ✅ Claude Code + Gemini CLI + OpenAI Codex CLI + OpenClaw support
 - ✅ Agents + MCPs sync (content mirror strategy)
-- ✅ Tool-open auto-trigger (via WaslaGenie skill)
+- ✅ Session-scoped background sync (co-process launched by tool skill, exits with tool)
 - ✅ Manual sync (`waslagenie sync`) also available
-- ✅ Conflict resolution (interactive)
+- ✅ Conflict resolution (interactive, Latest-is-Greatest)
 - ✅ Orphan handling (.bak)
 - ✅ User + workspace scope
 - ✅ `npx wasla-genie install`
 - ✅ Export/import for backup (`waslagenie export`, `waslagenie import`)
+- ✅ Gradual centralization foundation (`~/.waslagenie/` as optional canonical location)
 - 🔄 Transformers concept (format conversion + vendor updates)
 
 ### v1.1
-- Codex + Hermes adapters
+- Cursor + GitHub Copilot adapters (IDE-based agent support)
+- Hermes adapter
+- `waslagenie migrate` — move assets to `~/.waslagenie/` for centralization
 - Skills + Commands + Cron sync
 - Multi-profile support
-- `waslagenie watch` daemon mode (persistent background sync)
 - Skill store integration
 
 ### v1.2
@@ -569,9 +611,10 @@ wasla-genie/
 
 ## 13. Non-Goals (MVP)
 
-- ❌ Persistent daemon / file watching (tool-open trigger is sufficient)
+- ❌ Persistent system daemon — WaslaGenie runs as a session-scoped co-process only (launched by tool skill, exits with tool)
 - ❌ Skills, commands, cron sync (agents + MCPs only)
-- ❌ Codex, Hermes support (Claude Code, Gemini CLI, OpenClaw only)
+- ❌ IDE-based agents (Cursor, GitHub Copilot) — different config model, deferred to v1.1
+- ❌ Hermes support — deferred to v1.1
 - ❌ GUI or web dashboard
 - ❌ Team collaboration features (leave it to users to manage ~/.waslagenie/ with git)
 - ❌ Multi-profile support (single default profile only)

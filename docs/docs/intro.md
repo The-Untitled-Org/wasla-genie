@@ -9,8 +9,8 @@ Welcome to WaslaGenie — the universal synchronization layer for AI agent orche
 ## Quick Links
 
 - **[Project Specification](/specs/project-spec)** — Complete product specification and design
-- **[Design Discussion](/specs/design-discussion)** — Deep-dive design decisions and rationale
-- **[Meetings of Mind](/mom)** — Meeting notes from the design process
+- **[Design Discussion](/discussions/ai-discussions)** — Deep-dive design decisions and rationale
+- **[Meetings of Mind](/discussions/MoM)** — Meeting notes from the design process
 
 ## What is WaslaGenie?
 
@@ -45,8 +45,8 @@ waslagenie status            # View all synced assets
 This documentation contains:
 
 - **[Project Specification](/specs/project-spec)** — MVP specification, architecture, and design
-- **[Design Discussion](/specs/design-discussion)** — Grilling session notes and decision rationale
-- **[Meetings of Mind](/mom)** — Meeting notes (MoM) with key decisions
+- **[Design Discussion](/discussions/ai-discussions)** — Grilling session notes and decision rationale
+- **[Meetings of Mind](/discussions/MoM)** — Meeting notes (MoM) with key decisions
 
 ## GitHub
 

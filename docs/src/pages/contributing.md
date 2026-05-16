@@ -67,8 +67,8 @@ Be respectful and collaborative. We're building this together.
 ## Questions?
 
 - Check the [Project Specification](/specs/project-spec)
-- Read the [Design Discussion](/specs/design-discussion)
-- Browse [Meetings of Mind](/mom)
+- Read the [Design Discussion](/discussions/ai-discussions)
+- Browse [Meetings of Mind](/discussions/MoM)
 - Open an issue on [GitHub](https://github.com/The-Untitled-Org/wasla-genie)
 
 ---

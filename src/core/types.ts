@@ -38,7 +38,7 @@ export interface Registry {
 }
 
 // Adapter interface
-export interface WaslGenieAdapter {
+export interface WaslaGenieAdapter {
   name: string;
   displayName: string;
 

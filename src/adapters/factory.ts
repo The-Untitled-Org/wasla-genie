@@ -1,9 +1,9 @@
-import { WaslGenieAdapter } from '../core/types.js';
+import { WaslaGenieAdapter } from '../core/types.js';
 import { ClaudeAdapter } from './claude.js';
 import { GeminiAdapter } from './gemini.js';
 import { OpenclawAdapter } from './openclaw.js';
 
-function createAdapters(scope: 'user' | 'workspace' = 'user'): Record<string, WaslGenieAdapter> {
+function createAdapters(scope: 'user' | 'workspace' = 'user'): Record<string, WaslaGenieAdapter> {
   return {
     claude: new ClaudeAdapter(scope),
     gemini: new GeminiAdapter(scope),
@@ -14,7 +14,7 @@ function createAdapters(scope: 'user' | 'workspace' = 'user'): Record<string, Wa
 export function getAdapter(
   toolName: string,
   scope: 'user' | 'workspace' = 'workspace'
-): WaslGenieAdapter {
+): WaslaGenieAdapter {
   const adapters = createAdapters(scope);
   const adapter = adapters[toolName.toLowerCase()];
   if (!adapter) {
@@ -25,9 +25,9 @@ export function getAdapter(
 
 export async function getInstalledAdapters(
   scope: 'user' | 'workspace' = 'workspace'
-): Promise<WaslGenieAdapter[]> {
+): Promise<WaslaGenieAdapter[]> {
   const adapters = Object.values(createAdapters(scope));
-  const installed: WaslGenieAdapter[] = [];
+  const installed: WaslaGenieAdapter[] = [];
 
   for (const adapter of adapters) {
     if (await adapter.isInstalled()) {
@@ -38,6 +38,6 @@ export async function getInstalledAdapters(
   return installed;
 }
 
-export function getAllAdapters(scope: 'user' | 'workspace' = 'workspace'): WaslGenieAdapter[] {
+export function getAllAdapters(scope: 'user' | 'workspace' = 'workspace'): WaslaGenieAdapter[] {
   return Object.values(createAdapters(scope));
 }

@@ -10,16 +10,16 @@ export function expandTilde(path: string): string {
 
 export function getRegistryPath(scope: 'user' | 'workspace'): string {
   if (scope === 'user') {
-    return expandTilde('~/.waslgenie/registry.json');
+    return expandTilde('~/.waslagenie/registry.json');
   }
-  return resolve('.waslgenie/registry.json');
+  return resolve('.waslagenie/registry.json');
 }
 
 export function getRegistryDir(scope: 'user' | 'workspace'): string {
   if (scope === 'user') {
-    return expandTilde('~/.waslgenie');
+    return expandTilde('~/.waslagenie');
   }
-  return resolve('.waslgenie');
+  return resolve('.waslagenie');
 }
 
 export function getToolMarkers(scope: 'user' | 'workspace' = 'user'): Record<string, string> {

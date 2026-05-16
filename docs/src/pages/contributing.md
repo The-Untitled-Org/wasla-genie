@@ -1,6 +1,6 @@
 # Contributing
 
-We welcome contributions to WaslGenie! Whether you're interested in fixing bugs, adding features, improving documentation, or creating adapters for new tools, there's a place for you here.
+We welcome contributions to WaslaGenie! Whether you're interested in fixing bugs, adding features, improving documentation, or creating adapters for new tools, there's a place for you here.
 
 ## Getting Started
 
@@ -73,4 +73,4 @@ Be respectful and collaborative. We're building this together.
 
 ---
 
-**Thanks for contributing to WaslGenie!** ✨
+**Thanks for contributing to WaslaGenie!** ✨

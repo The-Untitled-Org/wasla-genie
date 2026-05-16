@@ -121,7 +121,7 @@ export class Scanner {
   private async isStubFile(filePath: string): Promise<boolean> {
     try {
       const content = await readText(filePath);
-      return content.includes('waslgenie-stub') || content.includes('waslgenie:');
+      return content.includes('waslagenie-stub') || content.includes('waslagenie:');
     } catch {
       return false;
     }

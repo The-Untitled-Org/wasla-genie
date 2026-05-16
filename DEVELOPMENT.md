@@ -1,6 +1,6 @@
 # VSCode Development Guide
 
-This guide explains how to set up and use WaslGenie development in VSCode.
+This guide explains how to set up and use WaslaGenie development in VSCode.
 
 ## 📦 Recommended Extensions
 
@@ -52,7 +52,7 @@ Configuration in `.vscode/settings.json`:
 
 Keeps sidebar clean by hiding:
 - `node_modules/`
-- `.waslgenie/` (local working directory)
+- `.waslagenie/` (local working directory)
 - `.claude/`, `.gemini/`, `.config/opencode/` (tool directories)
 
 ## 🐛 Debugging
@@ -65,7 +65,7 @@ Launch configurations in `.vscode/launch.json`:
 F5 → "Debug CLI"
 ```
 
-Runs the WaslGenie CLI in the debugger. Add breakpoints and step through code.
+Runs the WaslaGenie CLI in the debugger. Add breakpoints and step through code.
 
 ### Debug Tests
 
@@ -81,7 +81,7 @@ Runs Vitest in debug mode. Great for stepping through test logic.
 F5 → "Debug Sync Command"
 ```
 
-Runs `waslgenie sync` with debugger attached.
+Runs `waslagenie sync` with debugger attached.
 
 ### How to Debug
 

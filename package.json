@@ -1,11 +1,11 @@
 {
-  "name": "wasl-genie",
+  "name": "wasla-genie",
   "version": "0.1.0",
   "description": "Universal synchronization layer for AI agent orchestrators",
   "type": "module",
   "main": "dist/cli/index.js",
   "bin": {
-    "waslgenie": "dist/cli/index.js"
+    "waslagenie": "dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc",

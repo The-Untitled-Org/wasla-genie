@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Meetings of Mind
 
-This section contains meeting notes (MoMs) documenting key decisions and discussions throughout the WaslGenie project development.
+This section contains meeting notes (MoMs) documenting key decisions and discussions throughout the WaslaGenie project development.
 
 ## MoM Index
 

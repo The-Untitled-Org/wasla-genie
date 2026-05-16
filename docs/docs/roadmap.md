@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Roadmap
 
-WaslGenie is currently in **alpha**. Here's what's planned:
+WaslaGenie is currently in **alpha**. Here's what's planned:
 
 ## MVP (Current)
 

@@ -10,12 +10,12 @@ import { watchCommand } from './commands/watch.js';
 const program = new Command();
 
 program
-  .name('waslgenie')
+  .name('waslagenie')
   .description('Universal synchronization layer for AI agent orchestrators')
   .version('0.1.0');
 
 program.addCommand(
-  new Command('install').description('Detect tools and register WaslGenie').action(installCommand)
+  new Command('install').description('Detect tools and register WaslaGenie').action(installCommand)
 );
 
 program.addCommand(
@@ -36,7 +36,7 @@ program.addCommand(
   new Command('config')
     .option('--scope <scope>', 'Set scope to user or workspace')
     .option('--show', 'Show current config')
-    .description('Configure WaslGenie settings')
+    .description('Configure WaslaGenie settings')
     .action((options) => configCommand(options))
 );
 

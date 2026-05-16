@@ -21,7 +21,7 @@ export async function installCommand(): Promise<void> {
     });
 
     spacer();
-    section('Installing WaslGenie...');
+    section('Installing WaslaGenie...');
     spacer();
 
     // Ensure registry directory exists
@@ -42,8 +42,8 @@ export async function installCommand(): Promise<void> {
     console.log('');
     console.log('Next steps:');
     console.log('  1. Create agents in your preferred tool');
-    console.log('  2. Run: waslgenie sync');
-    console.log('  3. Run: waslgenie watch (for auto-sync)');
+    console.log('  2. Run: waslagenie sync');
+    console.log('  3. Run: waslagenie watch (for auto-sync)');
     console.log('');
   } catch (err) {
     error(`Installation failed: ${err}`);

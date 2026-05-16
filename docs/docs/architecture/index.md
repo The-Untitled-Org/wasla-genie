@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Architecture Overview
 
-WaslGenie is designed to be a lightweight, tool-agnostic synchronization layer for AI agents and MCPs. Its architecture prioritizes simplicity, local-first execution, and seamless integration with existing AI orchestrators.
+WaslaGenie is designed to be a lightweight, tool-agnostic synchronization layer for AI agents and MCPs. Its architecture prioritizes simplicity, local-first execution, and seamless integration with existing AI orchestrators.
 
 ## Core Components
 

@@ -49,11 +49,11 @@ You end up **copy-pasting configs, duplicating agent definitions, and maintainin
 
 ---
 
-## ✨ What WaslGenie Does
+## ✨ What WaslaGenie Does
 
-WaslGenie installs itself as a **native skill inside each orchestrator** and runs as an **external CLI daemon** alongside it.
+WaslaGenie installs itself as a **native skill inside each orchestrator** and runs as an **external CLI daemon** alongside it.
 
-When sync is triggered — manually or automatically — WaslGenie:
+When sync is triggered — manually or automatically — WaslaGenie:
 
 1. **Scans** the known config directories of every supported orchestrator on your machine  
    (`~/.claude/`, `~/.gemini/`, `~/.codex/`, `~/.openclaw/`, `~/.hermes/`)
@@ -74,12 +74,12 @@ Say you create an agent inside Gemini CLI:
 ~/.gemini/agents/researcher.md   ← original, owned by Gemini
 ```
 
-After `waslgenie sync`, WaslGenie writes a minimal stub into every other tool:
+After `waslagenie sync`, WaslaGenie writes a minimal stub into every other tool:
 
 ```
-~/.claude/agents/researcher.md   ← stub, written by WaslGenie
-~/.codex/agents/researcher.md    ← stub, written by WaslGenie
-~/.openclaw/agents/researcher.md ← stub, written by WaslGenie
+~/.claude/agents/researcher.md   ← stub, written by WaslaGenie
+~/.codex/agents/researcher.md    ← stub, written by WaslaGenie
+~/.openclaw/agents/researcher.md ← stub, written by WaslaGenie
 ```
 
 Each stub contains only the minimum that native tool needs to load the original:
@@ -87,7 +87,7 @@ Each stub contains only the minimum that native tool needs to load the original:
 ```markdown
 ---
 # researcher
-waslgenie_ref: ~/.gemini/agents/researcher.md
+waslagenie_ref: ~/.gemini/agents/researcher.md
 origin: gemini
 ---
 Refer to source definition at ~/.gemini/agents/researcher.md
@@ -124,19 +124,19 @@ The same pattern applies across every asset type:
 
 ## 🚀 Installation
 
-WaslGenie is cross-platform via `npx` — no global install required:
+WaslaGenie is cross-platform via `npx` — no global install required:
 
 ```bash
-npx wasl-genie install
+npx wasla-genie install
 ```
 
-This detects every supported orchestrator on your machine and registers WaslGenie as a native skill inside each one.
+This detects every supported orchestrator on your machine and registers WaslaGenie as a native skill inside each one.
 
 **Or install globally:**
 
 ```bash
-npm install -g wasl-genie
-waslgenie install
+npm install -g wasla-genie
+waslagenie install
 ```
 
 ---
@@ -146,7 +146,7 @@ waslgenie install
 ### One-time sync
 
 ```bash
-waslgenie sync
+waslagenie sync
 ```
 
 ```
@@ -170,11 +170,11 @@ waslgenie sync
 ### Daemon mode — continuous background sync
 
 ```bash
-waslgenie watch
+waslagenie watch
 ```
 
 ```
-👁  WaslGenie watching for changes...
+👁  WaslaGenie watching for changes...
     Monitoring: ~/.claude  ~/.gemini  ~/.codex  ~/.openclaw  ~/.hermes
 
 [14:32:01]  New agent detected → ~/.gemini/agents/planner.md
@@ -192,10 +192,10 @@ No restart. No manual trigger. The moment something is created — it's everywhe
 
 ```bash
 # Sync only within current project workspace
-waslgenie sync --scope workspace
+waslagenie sync --scope workspace
 
 # Sync across your entire user space (default)
-waslgenie sync --scope user
+waslagenie sync --scope user
 ```
 
 ---
@@ -203,7 +203,7 @@ waslgenie sync --scope user
 ### Status — see everything and where it lives
 
 ```bash
-waslgenie status
+waslagenie status
 ```
 
 ```
@@ -235,11 +235,11 @@ review-pr          command    openclaw    claude ✔  gemini ✔  codex ✔  her
 
 ## 🗃️ Registry Storage
 
-WaslGenie keeps its own state separately from all orchestrators. You choose the scope at install time:
+WaslaGenie keeps its own state separately from all orchestrators. You choose the scope at install time:
 
 **User-level** (default — available across all your projects):
 ```
-~/.waslgenie/
+~/.waslagenie/
 ├── registry.json     ← every discovered asset + origin tool + stub locations
 ├── stubs/            ← log of every stub written and when
 └── config.json       ← your scope and preferences
@@ -247,7 +247,7 @@ WaslGenie keeps its own state separately from all orchestrators. You choose the 
 
 **Workspace-level** (scoped to current project only):
 ```
-.waslgenie/
+.waslagenie/
 ├── registry.json
 ├── stubs/
 └── config.json
@@ -255,8 +255,8 @@ WaslGenie keeps its own state separately from all orchestrators. You choose the 
 
 Switch anytime:
 ```bash
-waslgenie config --scope workspace
-waslgenie config --scope user
+waslagenie config --scope workspace
+waslagenie config --scope user
 ```
 
 ---
@@ -264,7 +264,7 @@ waslgenie config --scope user
 ## 🏗️ Project Structure
 
 ```
-wasl-genie/
+wasla-genie/
 ├── src/
 │   ├── cli/              # CLI entry point and commands
 │   ├── scanner/          # Scans known tool config directories
@@ -287,9 +287,9 @@ wasl-genie/
 
 ---
 
-## 🌍 Why "WaslGenie"?
+## 🌍 Why "WaslaGenie"?
 
-**Wasl (وصل)** is Arabic for *connection* — the act of joining what was always separate.
+**Wasla (وصلة)** is Arabic for *connection* — the act of joining what was always separate.
 
 **Genie** — it appears when summoned, connects what you need, and watches quietly in the background until called again.
 
@@ -324,7 +324,7 @@ MIT © [Mosaeed Hammad](https://github.com/mosaeedhammad)
 <div align="center">
 
 **Your agents live where they were born.**  
-**WaslGenie makes sure every tool can find them.**
+**WaslaGenie makes sure every tool can find them.**
 
 ⭐ Star this repo if you are tired of copy-pasting the same config into five different tools.
 

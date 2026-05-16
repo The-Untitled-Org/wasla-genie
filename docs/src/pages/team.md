@@ -1,6 +1,6 @@
 # Team
 
-WaslGenie is built and maintained by:
+WaslaGenie is built and maintained by:
 
 - **@inegmdev** — Architecture & Adapters
 - **@mustafabahaa** — CLI & Core

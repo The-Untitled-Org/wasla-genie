@@ -13,7 +13,7 @@ describe('Sync Integration Tests', () => {
   let syncer: Syncer;
 
   beforeAll(async () => {
-    testDir = join(tmpdir(), `waslgenie-test-${Date.now()}`);
+    testDir = join(tmpdir(), `waslagenie-test-${Date.now()}`);
     await ensureDir(testDir);
     registry = new RegistryManager();
     scanner = new Scanner('workspace');

@@ -1,10 +1,10 @@
-# Contributing to WaslGenie
+# Contributing to WaslaGenie
 
-We're excited to have you contribute to WaslGenie! This document outlines how to get started.
+We're excited to have you contribute to WaslaGenie! This document outlines how to get started.
 
 ## 🤝 The Team
 
-WaslGenie is developed by The Untitled Org:
+WaslaGenie is developed by The Untitled Org:
 
 - **@inegmdev** (Islam NEGM)
 - **@mustafabahaa** (Mustafa Bahaaeldeen)
@@ -187,4 +187,4 @@ This project is licensed under the MIT License — see [LICENSE](LICENSE) for de
 
 ---
 
-**Thanks for contributing to WaslGenie!** 🎉
+**Thanks for contributing to WaslaGenie!** 🎉

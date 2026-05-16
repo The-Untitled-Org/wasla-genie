@@ -3,7 +3,7 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'WaslGenie',
+  title: 'WaslaGenie',
   tagline: 'Universal synchronization layer for AI agent orchestrators',
   favicon: 'img/favicon.ico',
 
@@ -54,9 +54,9 @@ const config: Config = {
       disableSwitch: false,
     },
     navbar: {
-      title: 'WaslGenie',
+      title: 'WaslaGenie',
       logo: {
-        alt: 'WaslGenie Logo',
+        alt: 'WaslaGenie Logo',
         src: 'img/logo.png',
         width: 40,
         height: 40,

@@ -1,6 +1,6 @@
 # Tests Directory
 
-This directory contains all tests for the WaslGenie project, organized by test type.
+This directory contains all tests for the WaslaGenie project, organized by test type.
 
 ## Structure
 
@@ -42,7 +42,7 @@ npm run test:integration
 
 Validation tests verify end-to-end scenarios and user-facing workflows:
 
-- **e2e-workflow.test.ts** — Tests complete WaslGenie workflows:
+- **e2e-workflow.test.ts** — Tests complete WaslaGenie workflows:
   - Stub markers are correctly written and detected
   - Orphaned assets are marked with `.bak` status
   - Conflict resolution uses "latest is greatest" strategy
@@ -144,7 +144,7 @@ const result = await syncer.sync(false); // non-interactive
 - **Isolation:** Each test should be independent and not rely on state from other tests
 - **Cleanup:** Always clean up temporary files and state after tests
 - **Mocking:** Mock external dependencies; only test the module's logic
-- **Test Data:** Use realistic data that mirrors actual WaslGenie usage
+- **Test Data:** Use realistic data that mirrors actual WaslaGenie usage
 - **Assertions:** Use specific assertions (not just `toBeTruthy()`)
 
 ## Future Test Improvements

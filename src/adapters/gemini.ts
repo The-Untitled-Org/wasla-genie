@@ -42,13 +42,13 @@ export class GeminiAdapter extends BaseAdapter {
 
   private async writeAgentStub(targetPath: string, content: string): Promise<void> {
     await ensureDir(this.paths.agents);
-    const marked = `<!-- waslgenie-stub -->\n${content}`;
+    const marked = `<!-- waslagenie-stub -->\n${content}`;
     await writeText(targetPath, marked);
   }
 
   private async writeMcpStub(targetPath: string, content: string): Promise<void> {
     await ensureDir(this.paths.mcp);
-    const marked = `/* waslgenie-stub */\n${content}`;
+    const marked = `/* waslagenie-stub */\n${content}`;
     await writeText(targetPath, marked);
   }
 
@@ -61,44 +61,44 @@ export class GeminiAdapter extends BaseAdapter {
       content = await readText(geminiMdPath);
     }
 
-    const waslgenieBlock = `
-<!-- waslgenie:start -->
-## WaslGenie
+    const waslagenieBlock = `
+<!-- waslagenie:start -->
+## WaslaGenie
 
-WaslGenie synchronizes your agents and MCPs across Claude Code, Gemini CLI, and OpenClaw.
+WaslaGenie synchronizes your agents and MCPs across Claude Code, Gemini CLI, and OpenClaw.
 
-To use WaslGenie:
+To use WaslaGenie:
 \`\`\`bash
-waslgenie sync          # Sync agents across tools
-waslgenie status        # View all synced assets
-waslgenie watch         # Watch for changes and auto-sync
+waslagenie sync          # Sync agents across tools
+waslagenie status        # View all synced assets
+waslagenie watch         # Watch for changes and auto-sync
 \`\`\`
 
-For more info: [WaslGenie Documentation](https://github.com/yourusername/wasl-genie)
-<!-- waslgenie:end -->
+For more info: [WaslaGenie Documentation](https://github.com/yourusername/wasla-genie)
+<!-- waslagenie:end -->
 `;
 
-    if (!content.includes('<!-- waslgenie:start -->')) {
-      await writeText(geminiMdPath, content + waslgenieBlock);
+    if (!content.includes('<!-- waslagenie:start -->')) {
+      await writeText(geminiMdPath, content + waslagenieBlock);
     }
   }
 
   getRootConfigAppend(): string | null {
     return `
-<!-- waslgenie:start -->
-## WaslGenie
+<!-- waslagenie:start -->
+## WaslaGenie
 
-WaslGenie synchronizes your agents and MCPs across Claude Code, Gemini CLI, and OpenClaw.
+WaslaGenie synchronizes your agents and MCPs across Claude Code, Gemini CLI, and OpenClaw.
 
-To use WaslGenie:
+To use WaslaGenie:
 \`\`\`bash
-waslgenie sync          # Sync agents across tools
-waslgenie status        # View all synced assets
-waslgenie watch         # Watch for changes and auto-sync
+waslagenie sync          # Sync agents across tools
+waslagenie status        # View all synced assets
+waslagenie watch         # Watch for changes and auto-sync
 \`\`\`
 
-For more info: [WaslGenie Documentation](https://github.com/yourusername/wasl-genie)
-<!-- waslgenie:end -->
+For more info: [WaslaGenie Documentation](https://github.com/yourusername/wasla-genie)
+<!-- waslagenie:end -->
 `;
   }
 }

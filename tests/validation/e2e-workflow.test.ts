@@ -21,9 +21,9 @@ describe('Validation Tests - End-to-End Sync Workflow', () => {
           const content = await readText(stub.path);
           // Verify stub marker is present
           expect(
-            content.includes('waslgenie-stub') ||
-              content.includes('waslgenie:') ||
-              content.includes('waslgenie')
+            content.includes('waslagenie-stub') ||
+              content.includes('waslagenie:') ||
+              content.includes('waslagenie')
           ).toBe(true);
         }
       }

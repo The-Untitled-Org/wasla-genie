@@ -2,9 +2,9 @@
 sidebar_position: 2
 ---
 
-# WaslGenie Documentation
+# WaslaGenie Documentation
 
-Welcome to WaslGenie — the universal synchronization layer for AI agent orchestrators.
+Welcome to WaslaGenie — the universal synchronization layer for AI agent orchestrators.
 
 ## Quick Links
 
@@ -12,9 +12,9 @@ Welcome to WaslGenie — the universal synchronization layer for AI agent orches
 - **[Design Discussion](/specs/design-discussion)** — Deep-dive design decisions and rationale
 - **[Meetings of Mind](/mom)** — Meeting notes from the design process
 
-## What is WaslGenie?
+## What is WaslaGenie?
 
-WaslGenie synchronizes your agents and MCPs across Claude Code, Gemini CLI, and OpenCode without duplicating files.
+WaslaGenie synchronizes your agents and MCPs across Claude Code, Gemini CLI, and OpenCode without duplicating files.
 
 ### The Problem
 
@@ -22,14 +22,14 @@ You work across multiple AI orchestrators. Each one is its own universe. You bui
 
 ### The Solution
 
-WaslGenie scans each tool, discovers what you've built, and mirrors the content into every other tool using the "Latest is Greatest" strategy. Whichever version was modified most recently becomes the canonical source.
+WaslaGenie scans each tool, discovers what you've built, and mirrors the content into every other tool using the "Latest is Greatest" strategy. Whichever version was modified most recently becomes the canonical source.
 
 ## Quick Start
 
 ```bash
-npx wasl-genie install      # Detect tools and register WaslGenie
-waslgenie sync              # Scan, discover, and mirror assets
-waslgenie status            # View all synced assets
+npx wasla-genie install      # Detect tools and register WaslaGenie
+waslagenie sync              # Scan, discover, and mirror assets
+waslagenie status            # View all synced assets
 ```
 
 ## Key Features

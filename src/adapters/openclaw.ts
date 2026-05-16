@@ -42,13 +42,13 @@ export class OpenclawAdapter extends BaseAdapter {
 
   private async writeAgentStub(targetPath: string, content: string): Promise<void> {
     await ensureDir(this.paths.agents);
-    const marked = `<!-- waslgenie-stub -->\n${content}`;
+    const marked = `<!-- waslagenie-stub -->\n${content}`;
     await writeText(targetPath, marked);
   }
 
   private async writeMcpStub(targetPath: string, content: string): Promise<void> {
     await ensureDir(this.paths.mcp);
-    const marked = `/* waslgenie-stub */\n${content}`;
+    const marked = `/* waslagenie-stub */\n${content}`;
     await writeText(targetPath, marked);
   }
 

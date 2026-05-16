@@ -71,9 +71,9 @@ export async function configCommand(options: ConfigOptions): Promise<void> {
     info(`Registry: ${getRegistryPath(currentScope)}`);
     spacer();
     console.log('Usage:');
-    console.log('  waslgenie config --scope user       # Store registry in ~/.waslgenie/');
-    console.log('  waslgenie config --scope workspace  # Store registry in .waslgenie/');
-    console.log('  waslgenie config --show             # Show current config');
+    console.log('  waslagenie config --scope user       # Store registry in ~/.waslagenie/');
+    console.log('  waslagenie config --scope workspace  # Store registry in .waslagenie/');
+    console.log('  waslagenie config --show             # Show current config');
   } catch (err) {
     error(`Config failed: ${err}`);
     process.exit(1);

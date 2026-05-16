@@ -12,7 +12,7 @@ title: Design Discussion
 │                        ▘▘ ▝▝                       │ Added plugin dependenc… │
 │ Haiku 4.5 · Claude Pro · islam.g.negm@gmail.com's  │ Added projected contex… │
 │ Organization                                       │ Added `worktree.bgIsol… │
-│             ~/p/playground/wasl-genie              │ /release-notes for more │
+│             ~/p/playground/wasla-genie              │ /release-notes for more │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 
 ❯ /grill-me read the product idea @README.md @SPEC.md                           
@@ -25,14 +25,14 @@ title: Design Discussion
 
   First, the core premise:
 
-  You're designing WaslGenie to solve "I create an agent in Claude Code, but it
+  You're designing WaslaGenie to solve "I create an agent in Claude Code, but it
   doesn't exist in OpenClaw" by writing stub files that reference the original
   rather than duplicating the file or syncing to a central location.
 
   But I want to understand the constraint you're operating under:
 
   Why can't you just sync all assets to a single canonical location (e.g., 
-  ~/.waslgenie/assets/) and have each orchestrator read from there instead?
+  ~/.waslagenie/assets/) and have each orchestrator read from there instead?
 
   That would eliminate:
   - The need for adapters per tool
@@ -50,7 +50,7 @@ title: Design Discussion
 ✻ Baked for 9s
 
 ❯ Look, you're on the right path of having one single canonical location, but   
-  the idea is that this will require us to let the waslgenie track the creation 
+  the idea is that this will require us to let the waslagenie track the creation 
    of such skills and this is not convienient for most users. Meaning some      
   users will prefer to create skills for example inside gemini as they're       
   familiar with this tool and they will still expect the same skill to be       
@@ -58,7 +58,7 @@ title: Design Discussion
 
 ● Ah, that's the constraint. Got it. Users create naturally where they're
   comfortable—in Gemini because they know Gemini, in Claude because they use
-  Claude daily—and WaslGenie makes those assets visible everywhere without
+  Claude daily—and WaslaGenie makes those assets visible everywhere without
   forcing a migration.
 
   That's a fundamentally different problem than "sync to one place," and it
@@ -67,7 +67,7 @@ title: Design Discussion
 
   Okay, moving down the tree:
 
-  Now assume a user creates an agent in Gemini, and WaslGenie writes a stub into
+  Now assume a user creates an agent in Gemini, and WaslaGenie writes a stub into
    ~/.claude/agents/researcher.md.
 
   When Claude Code opens that stub file, what actually happens? Does Claude
@@ -75,7 +75,7 @@ title: Design Discussion
 
   - A) Read the stub as if it's a real agent file (so the stub must contain
   full, valid Claude agent syntax)?
-  - B) Recognize the stub has a waslgenie_ref header and automatically follow
+  - B) Recognize the stub has a waslagenie_ref header and automatically follow
   the reference to load the Gemini original?
   - C) Something else?
 
@@ -93,7 +93,7 @@ title: Design Discussion
 ❯ B                                                                             
 
 ● Okay, so orchestrators do need to understand stubs natively—recognize the
-  waslgenie_ref header and follow the reference to load the original.
+  waslagenie_ref header and follow the reference to load the original.
 
   But here's my grilling question:
 
@@ -104,7 +104,7 @@ title: Design Discussion
 
   - A) Reach out to Anthropic, OpenClaw maintainers, Google and convince them to
    ship stub-loading logic in their tools?
-  - B) Ship WaslGenie as a skill inside each tool that intercepts file loading
+  - B) Ship WaslaGenie as a skill inside each tool that intercepts file loading
   and adds stub-awareness without modifying the tool itself?
   - C) Something else entirely?
 
@@ -122,7 +122,7 @@ title: Design Discussion
 
 ❯ B                                                                             
 
-● Right. WaslGenie ships as a skill/extension that hooks into agent loading in
+● Right. WaslaGenie ships as a skill/extension that hooks into agent loading in
   each tool, intercepts stub files, and resolves them to the original.
 
   Which means my next grilling question is about feasibility:
@@ -237,7 +237,7 @@ title: Design Discussion
   ⎿  · Since Option B (full content mirroring) is the only viable approach, 
      stubs go stale whenever the original is edited. Without a daemon watching 
      for changes, a user could edit their Gemini agent, run Claude Code, and get
-      the old mirrored version. Does this push `waslgenie watch` (daemon mode) 
+      the old mirrored version. Does this push `waslagenie watch` (daemon mode) 
      into MVP scope? → Yes, keep the daemon inside the MVP plan. Also let the 
      user have the ability to sync manually (or force sync). Another thing, I 
      want to avoid content mirroring as much as possible as this will make a lot
@@ -259,7 +259,7 @@ title: Design Discussion
 
   ---
   name: researcher
-  waslgenie: true
+  waslagenie: true
   origin_tool: gemini
   origin_path: ~/.gemini/agents/researcher.md
   ---
@@ -316,7 +316,7 @@ title: Design Discussion
 ● User answered Claude's questions:
   ⎿  · Given that Option C is technically possible in Claude Code but unreliable
       (LLM instruction, not a guaranteed mechanism), and we haven't verified it 
-     works in OpenCode or Gemini CLI — which strategy should WaslGenie use for 
+     works in OpenCode or Gemini CLI — which strategy should WaslaGenie use for 
      agent stubs? → Ok, so it seems that we are running out of options. I would 
      prefer to test each tool and see if it's really first eligible for 
      cross-referencing like @import, then we can check if the tool accepts the 
@@ -337,7 +337,7 @@ title: Design Discussion
 
   Continuing down the design tree — let me grill you on the daemon:
 
-  waslgenie watch now needs to be in MVP. The daemon watches for changes to
+  waslagenie watch now needs to be in MVP. The daemon watches for changes to
   agent files across all tool directories and triggers syncs. But there are two
   design choices here:
 
@@ -348,8 +348,8 @@ title: Design Discussion
   file changes, is created, or is deleted
   - B) Polling interval: Check the directories every N seconds/minutes and diff
   against the registry
-  - C) Tool-open trigger only: No persistent daemon — instead WaslGenie installs
-   itself as a skill in each tool that runs waslgenie sync when the tool starts
+  - C) Tool-open trigger only: No persistent daemon — instead WaslaGenie installs
+   itself as a skill in each tool that runs waslagenie sync when the tool starts
 
   My recommended answer: A (filesystem events via chokidar). It's instant, low
   CPU overhead, and npm has great cross-platform support for it. Polling wastes
@@ -391,7 +391,7 @@ title: Design Discussion
   Moving to the next branch — conflict resolution:
 
   The SPEC describes this scenario: you scan and find researcher.md in BOTH
-  ~/.claude/agents/ AND ~/.gemini/agents/, and neither is a WaslGenie stub. Two
+  ~/.claude/agents/ AND ~/.gemini/agents/, and neither is a WaslaGenie stub. Two
   originals. Which one is the source of truth?
 
   The SPEC says: halt on that asset, surface it to the user, ask them to pick
@@ -399,12 +399,12 @@ title: Design Discussion
 
   My grilling question is about the edge case after resolution:
 
-  Say the user picks Claude as the origin. WaslGenie converts the Gemini version
+  Say the user picks Claude as the origin. WaslaGenie converts the Gemini version
    to a stub. Now the user — forgetting about this — manually edits the Gemini
   stub directly in their editor. The stub now diverges from the Claude original.
-   Next sync comes along and WaslGenie overwrites their edits.
+   Next sync comes along and WaslaGenie overwrites their edits.
 
-  How should WaslGenie handle edits to stubs?
+  How should WaslaGenie handle edits to stubs?
 
   - A) Detect divergence, warn the user, halt: "You edited a stub. This will be
   overwritten on next sync. Convert it to an origin or discard changes?"
@@ -424,15 +424,15 @@ title: Design Discussion
 ✻ Sautéed for 16s
 
 ❯  I would say that we are going with the canonical design appraoch, meaning    
-  everything will be inside ~/.waslgenie and this will be the source of truth.  
+  everything will be inside ~/.waslagenie and this will be the source of truth.  
   Say if user wants to edit a skill, once he opens that SKILL.md file he will   
   find that the markdown file either cross reference or refer to LLM            
-  instruction to the same file in ~/.waslgenie and this means that the user     
+  instruction to the same file in ~/.waslagenie and this means that the user     
   will understand that he will update this. If the user decided to force an     
-  edit, then waslgenie will warn him and ask if he wants to add this to the     
+  edit, then waslagenie will warn him and ask if he wants to add this to the     
   origin source of truth. The only problem comes if the tool does not support   
   either the cross referencing @import or even the LLM instructions refers, so  
-  the only option would be the content mirroring, and here wasl genie should    
+  the only option would be the content mirroring, and here wasla genie should    
   have a disclaimer for the user inside the file that the original file is not  
   this and any edites will be warnings, then asking the user if he want's to    
   force sync or just add to it (showing the diff review between before/after)   
@@ -442,20 +442,20 @@ title: Design Discussion
    and I need to grill you on it before we go further.
 
   In your new approach:
-  - ~/.waslgenie/agents/ is THE canonical location
+  - ~/.waslagenie/agents/ is THE canonical location
   - Users don't create agents in ~/.claude/agents/ or ~/.gemini/agents/ anymore
-  - All tool-specific directories get stubs pointing back to ~/.waslgenie/
+  - All tool-specific directories get stubs pointing back to ~/.waslagenie/
 
   But the original problem statement (README.md) says:
 
-  ▎ "Your agents live where they were born. WaslGenie makes sure every tool can 
+  ▎ "Your agents live where they were born. WaslaGenie makes sure every tool can 
   ▎ find them."
 
   This was the core value prop: respect the user's existing workflow. A user
   comfortable with Gemini CLI doesn't have to learn a new "canonical location" —
-   they create in Gemini, and WaslGenie makes it visible in Claude.
+   they create in Gemini, and WaslaGenie makes it visible in Claude.
 
-  Your new design inverts that: users must learn to use ~/.waslgenie/ as their 
+  Your new design inverts that: users must learn to use ~/.waslagenie/ as their 
   primary creation point. That's more maintainable architecturally, but it
   breaks the zero-friction promise.
 
@@ -463,11 +463,11 @@ title: Design Discussion
 
   1. Are you intentionally pivoting away from the "agents live where they were 
   born" value prop? Should we update the README to say "your agents live in
-  ~/.waslgenie/"?
+  ~/.waslagenie/"?
   2. What about existing agents already in ~/.claude/agents/ or 
-  ~/.gemini/agents/? Does waslgenie install prompt to migrate them into
-  ~/.waslgenie/? That's a big UX ask.
-  3. Is ~/.waslgenie/ becoming WaslGenie's own "tool" in effect? Users create
+  ~/.gemini/agents/? Does waslagenie install prompt to migrate them into
+  ~/.waslagenie/? That's a big UX ask.
+  3. Is ~/.waslagenie/ becoming WaslaGenie's own "tool" in effect? Users create
   there first, then other tools read stubs. Have we just replaced "five separate
    tools" with "use our tool + stubs in five others"?
 
@@ -497,29 +497,29 @@ title: Design Discussion
   portability feature strategically:
 
   1. Original design stays: Users create agents wherever they're comfortable.
-  WaslGenie scans ~/.claude/agents/, ~/.gemini/agents/,
+  WaslaGenie scans ~/.claude/agents/, ~/.gemini/agents/,
   ~/.config/opencode/agents/ and writes stubs.
-  2. Add waslgenie export command: Bundles all discovered agents (from all
-  tools) into a portable waslgenie-backup.tar with metadata. Users can share
+  2. Add waslagenie export command: Bundles all discovered agents (from all
+  tools) into a portable waslagenie-backup.tar with metadata. Users can share
   this or restore on a new machine.
-  waslgenie export              # creates waslgenie-backup.tar with all agents
-  waslgenie import backup.tar   # restores on new machine, recreates stubs 
+  waslagenie export              # creates waslagenie-backup.tar with all agents
+  waslagenie import backup.tar   # restores on new machine, recreates stubs 
   everywhere
-  3. Add waslgenie migrate command (post-MVP): Users can optionally move
-  individual agents from tool-specific dirs to ~/.waslgenie/agents/canonical/.
+  3. Add waslagenie migrate command (post-MVP): Users can optionally move
+  individual agents from tool-specific dirs to ~/.waslagenie/agents/canonical/.
   Not forced, but available. Over time, new agents are created there by
   convention.
-  4. Discovery is built-in: waslgenie status already shows where each agent
+  4. Discovery is built-in: waslagenie status already shows where each agent
   lives and which stubs point to it.
 
   This preserves:
   - ✅ Zero-friction (agents stay where users create them)
   - ✅ Portability (export/import the whole workflow)
-  - ✅ Learning curve (users learn ~/.waslgenie/ gradually, if at all)
+  - ✅ Learning curve (users learn ~/.waslagenie/ gradually, if at all)
   - ✅ Original value prop ("agents live where they were born")
 
-  Trade-off: Backup/share is slightly less elegant than cp -r ~/.waslgenie/
-  (needs waslgenie export). But it's still one command and it's discoverable.
+  Trade-off: Backup/share is slightly less elegant than cp -r ~/.waslagenie/
+  (needs waslagenie export). But it's still one command and it's discoverable.
 
   Do you want to explore this direction, or do you think the benefits of a
   canonical location outweigh the UX cost?
@@ -544,7 +544,7 @@ title: Design Discussion
   The features now in play:
   1. Local agent creation in familiar tools (zero-friction)
   2. Local sync via daemon (agents visible everywhere)
-  3. Gradual centralization to ~/.waslgenie/ (portability)
+  3. Gradual centralization to ~/.waslagenie/ (portability)
   4. Export/import for backup (individual machine)
   5. Team shared repo (team collaboration — NEW)
   6. Conflict resolution (local + team conflicts?)
@@ -579,7 +579,7 @@ title: Design Discussion
 ❯ - If a team shares a repo of agents, how do individual local agents interact  
   with team agents?                                                             
                                                                                 
-  I think in this case the wasl genie needs to allow the user select between    
+  I think in this case the wasla genie needs to allow the user select between    
   the active profiles (profile#1, profile#2, ..etc) -> say profile#2 is a       
   collaborative profile, this means this is the team workflow profile.          
                                                                                 
@@ -624,11 +624,11 @@ title: Design Discussion
   But here's the thing: with your profiles system, you already get most of the
   fork benefit without the feature:
 
-  waslgenie profile use team-profile
+  waslagenie profile use team-profile
   # Copy a team agent to local profile
-  waslgenie agent copy researcher --from team-profile --to local-profile
+  waslagenie agent copy researcher --from team-profile --to local-profile
 
-  waslgenie profile use local-profile
+  waslagenie profile use local-profile
   # Now edit the local copy freely
 
   User has two versions, no fork complexity. If they like their local version,

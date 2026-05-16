@@ -41,7 +41,7 @@ On every sync (triggered by tool-open or manual invocation):
 
 | Decision | Outcome | Why |
 |---|---|---|
-| **Sync trigger** | Tool-open only | Each tool's WaslGenie skill runs sync on launch. No persistent daemon. |
+| **Sync trigger** | Session-scoped co-process | Tool skill launches WaslGenie as a background process on tool start; it watches for changes and exits when the tool closes. Not a persistent system daemon. |
 | **Conflict model** | Latest-is-Greatest (mtime) | No permanent ownership. Newest version always wins automatically. |
 | **Registry** | Change detection only | Track hashes/mtimes. Source determined dynamically. No origin_tool field. |
 | **Asset authorship** | Any tool | Users create/edit agents in any supported tool. Latest becomes source. |
@@ -79,19 +79,21 @@ On every sync (triggered by tool-open or manual invocation):
 
 ## Sync Workflow (MVP)
 
-### Tool-Open Trigger (Automatic)
+### Session-Scoped Background Sync (Automatic)
+
+WaslGenie is not a persistent system daemon. It is a **session-scoped co-process**: launched by the WaslGenie skill when a tool opens, runs in the background watching for file changes, and exits cleanly when the tool closes.
 
 ```
 1. User opens Claude Code
 2. Claude Code launches → WaslGenie skill runs
-3. Skill executes: waslgenie sync --quick
-4. Scanner discovers all assets in all tool dirs
-5. Registry compares hashes/mtimes to detect changes
-6. For each changed asset:
-   a. Find newest version (by mtime)
-   b. Prompt user: "Use this version? (Y/n)"
-   c. User confirms → mirror to all other locations
-7. Registry updated, tool continues
+3. Skill starts WaslGenie as a background co-process (event-based file watcher)
+4. WaslGenie performs an initial scan on launch:
+   a. Discovers all assets across all tool dirs
+   b. Compares hashes/mtimes against registry
+   c. For each changed asset: prompts user and mirrors latest version
+5. WaslGenie continues watching for file changes during the session
+6. On any change: detects new source (Latest is Greatest), syncs to all locations
+7. User closes Claude Code → WaslGenie co-process exits
 ```
 
 ### Manual Sync
@@ -165,6 +167,42 @@ Track change detection only. Enable "Latest is Greatest" by storing hashes/mtime
 - **Hash + mtime per location** — enables change detection
 - **`last_synced_at` global** — when last sync occurred
 - **Simple, flat structure** — easy to reason about
+
+---
+
+## Gradual Centralization
+
+WaslGenie follows a **zero-friction-first, gradually centralizing** philosophy. Assets start wherever the user created them. Centralization to `~/.waslgenie/` is optional and user-driven.
+
+### Phase 0 (MVP): Assets live where they were born
+
+```
+~/.claude/agents/researcher.md     ← user created here
+~/.gemini/agents/researcher.md     ← WaslGenie stub
+~/.codex/agents/researcher.md      ← WaslGenie stub
+~/.waslgenie/                      ← registry + config only
+```
+
+### Phase 1 (v1.1): Optional migration to central location
+
+```bash
+waslgenie migrate researcher --to ~/.waslgenie/
+# researcher.md moves to ~/.waslgenie/agents/researcher.md
+# All tool stubs now point to ~/.waslgenie/ as source
+```
+
+### Phase 2 (v1.2): Fully centralized — backup and team sharing
+
+```bash
+waslgenie export                    # bundle ~/.waslgenie/ for backup or sharing
+waslgenie import backup.tar         # restore on a new machine
+```
+
+### Why this matters for architecture
+
+- **MVP registry** must track all known locations per asset, including `~/.waslgenie/assets/` as a valid location — this is already handled by the flat `locations` map in the registry schema.
+- **`waslgenie migrate`** is post-MVP but the registry schema must support it from day one (no breaking schema changes needed later).
+- **Export/import** is MVP scope: bundles all known assets regardless of where they live.
 
 ---
 
@@ -313,7 +351,7 @@ MVP complete
 
 ## Non-Goals (MVP)
 
-- ❌ Persistent daemon (`waslgenie watch`) — tool-open trigger sufficient
+- ❌ Persistent system daemon — WaslGenie runs as a session-scoped co-process only
 - ❌ Skills, commands, cron sync — agents + MCPs only
 - ❌ IDE-based agents (Cursor, GitHub Copilot) — different config model, deferred to v1.1
 - ❌ Hermes support — deferred to v1.1

@@ -66,9 +66,9 @@ waslgenie status           # show all discovered assets and stub state
 waslgenie config           # set scope (user vs workspace)
 ```
 
-**Sync trigger:** Tool-open trigger. When user opens Claude Code, Gemini CLI, or OpenClaw, WaslGenie skill automatically runs `waslgenie sync --quick`. Manual `waslgenie sync` is also available anytime.
+**Sync trigger:** Session-scoped background sync. When a tool starts, the WaslGenie skill installed in that tool **launches WaslGenie as a background co-process**. WaslGenie watches for file changes across all tool directories and syncs in real time. It exits cleanly when the tool closes. This is not a persistent system daemon — it only runs while a supported tool is active.
 
-No persistent daemon in MVP scope.
+Manual `waslgenie sync` is also available anytime for a one-shot full scan.
 
 ---
 
@@ -131,7 +131,32 @@ You are a researcher agent. Your job is to...
 
 ---
 
-### 3.4 "Latest is Greatest" Sync Strategy
+### 3.4 Gradual Centralization
+
+WaslGenie respects the zero-friction principle: assets live where the user created them. No migration is required on day one.
+
+However, WaslGenie provides an **optional path toward centralization** over time:
+
+1. **Day 0 (MVP):** Assets live in native tool directories (`~/.claude/agents/`, `~/.gemini/agents/`, etc.). WaslGenie syncs via stubs. `~/.waslgenie/` is used for registry and config only.
+
+2. **Gradual migration (optional):** Users can migrate individual assets to `~/.waslgenie/assets/` using `waslgenie migrate`. Stubs in tool directories then point to `~/.waslgenie/` as the source. No disruption to daily workflow.
+
+3. **Full centralization (optional end state):** All assets in `~/.waslgenie/`. Backup is a single `waslgenie export`. New machine setup is `waslgenie import`. Team sharing (v1.2) becomes practical.
+
+**Key principle:** Centralization is never forced. Users who never run `waslgenie migrate` experience no difference. Users who do migrate gain portability without losing any tool-native workflow.
+
+**Commands (MVP + post-MVP):**
+
+```bash
+waslgenie status                              # see where every asset currently lives
+waslgenie migrate <name> --to ~/.waslgenie/  # (post-MVP) move asset to central location
+waslgenie export                              # bundle all assets for backup/portability
+waslgenie import backup.tar                  # restore on a new machine
+```
+
+---
+
+### 3.5 "Latest is Greatest" Sync Strategy
 
 No explicit conflict resolution needed. Instead, WaslGenie uses **modification time (mtime)** to determine source of truth:
 
@@ -558,21 +583,22 @@ wasl-genie/
 ### v0.1 — MVP
 - ✅ Claude Code + Gemini CLI + OpenAI Codex CLI + OpenClaw support
 - ✅ Agents + MCPs sync (content mirror strategy)
-- ✅ Tool-open auto-trigger (via WaslGenie skill)
+- ✅ Session-scoped background sync (co-process launched by tool skill, exits with tool)
 - ✅ Manual sync (`waslgenie sync`) also available
-- ✅ Conflict resolution (interactive)
+- ✅ Conflict resolution (interactive, Latest-is-Greatest)
 - ✅ Orphan handling (.bak)
 - ✅ User + workspace scope
 - ✅ `npx wasl-genie install`
 - ✅ Export/import for backup (`waslgenie export`, `waslgenie import`)
+- ✅ Gradual centralization foundation (`~/.waslgenie/` as optional canonical location)
 - 🔄 Transformers concept (format conversion + vendor updates)
 
 ### v1.1
 - Cursor + GitHub Copilot adapters (IDE-based agent support)
 - Hermes adapter
+- `waslgenie migrate` — move assets to `~/.waslgenie/` for centralization
 - Skills + Commands + Cron sync
 - Multi-profile support
-- `waslgenie watch` daemon mode (persistent background sync)
 - Skill store integration
 
 ### v1.2
@@ -585,7 +611,7 @@ wasl-genie/
 
 ## 13. Non-Goals (MVP)
 
-- ❌ Persistent daemon / file watching (tool-open trigger is sufficient)
+- ❌ Persistent system daemon — WaslGenie runs as a session-scoped co-process only (launched by tool skill, exits with tool)
 - ❌ Skills, commands, cron sync (agents + MCPs only)
 - ❌ IDE-based agents (Cursor, GitHub Copilot) — different config model, deferred to v1.1
 - ❌ Hermes support — deferred to v1.1

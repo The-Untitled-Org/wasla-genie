@@ -162,24 +162,29 @@ waslgenie sync
 
 ---
 
-### Daemon mode — continuous background sync
+### Automatic background sync — session-scoped
 
-```bash
-waslgenie watch
+WaslGenie is not a standalone background daemon. Instead, the WaslGenie skill installed in each tool **launches WaslGenie as a background co-process when the tool starts** and **stops it when the tool closes**. It watches for file changes across all tool directories for the lifetime of that session.
+
+```
+[Tool starts]  → WaslGenie co-process launched by skill
+[File changes] → WaslGenie detects change and syncs immediately
+[Tool closes]  → WaslGenie co-process exits cleanly
 ```
 
 ```
-👁  WaslGenie watching for changes...
-    Monitoring: ~/.claude  ~/.gemini  ~/.codex  ~/.openclaw  ~/.hermes
+👁  WaslGenie active (session: Claude Code)
+    Monitoring: ~/.claude  ~/.gemini  ~/.codex  ~/.openclaw
 
 [14:32:01]  New agent detected → ~/.gemini/agents/planner.md
-[14:32:01]  Writing stubs     → .claude ✔  .codex ✔  .openclaw ✔  .hermes ✔
+[14:32:01]  Syncing stubs     → .claude ✔  .codex ✔  .openclaw ✔
 
-[15:10:44]  New MCP detected  → ~/.claude/mcp/notion.json
-[15:10:44]  Writing stubs     → .gemini ✔  .codex ✔  .openclaw ✔  .hermes ✔
+[15:10:44]  Agent updated     → ~/.claude/agents/researcher.md (Latest is Greatest)
+[15:10:44]  Syncing stubs     → .gemini ✔  .codex ✔  .openclaw ✔
 ```
 
-No restart. No manual trigger. The moment something is created — it's everywhere.
+No restart. No manual trigger. The moment something changes — it's everywhere.  
+No persistent system process. WaslGenie only runs while you're using a tool.
 
 ---
 
@@ -263,6 +268,38 @@ Switch anytime:
 waslgenie config --scope workspace
 waslgenie config --scope user
 ```
+
+---
+
+## 🌱 Gradual Centralization
+
+WaslGenie respects the **zero-friction promise**: your agents live where they were born. You don't need to learn a new canonical location on day one.
+
+But over time, WaslGenie offers a path toward centralization — for portability, backup, and eventually team sharing.
+
+```
+Day 1    — Agents live in ~/.claude/, ~/.gemini/, ~/.codex/
+           WaslGenie syncs them via stubs. You don't change anything.
+
+Over time — You discover agents scattered across 5 tool directories.
+           You run: waslgenie migrate researcher --to ~/.waslgenie/
+           Now researcher lives in ~/.waslgenie/ and stubs point there.
+
+Later    — All your agents are in ~/.waslgenie/.
+           Backup is: waslgenie export
+           New machine is: waslgenie import backup.tar
+```
+
+**Commands:**
+
+```bash
+waslgenie status                          # see where every asset lives today
+waslgenie migrate <name> --to ~/.waslgenie/   # optionally move an asset to central location
+waslgenie export                          # bundle everything for backup or new machine
+waslgenie import backup.tar              # restore on a new machine
+```
+
+Nothing is forced. Centralization is a convenience, not a requirement.
 
 ---
 

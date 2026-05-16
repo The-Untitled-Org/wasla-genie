@@ -12,9 +12,10 @@
 **وصل جيني** — *One skill layer. Every AI orchestrator. Zero duplication.*
 
 [![MIT License](https://img.shields.io/badge/license-MIT-00C896?style=flat-square)](LICENSE)
-[![npm](https://img.shields.io/npm/v/wasla-genie?style=flat-square&color=00C896)](https://npmjs.com/package/wasla-genie)
+[![GitHub](https://img.shields.io/badge/github-The--Untitled--Org-00C896?style=flat-square&logo=github)](https://github.com/The-Untitled-Org/wasla-genie)
+[![CI & Docs Deployment](https://github.com/The-Untitled-Org/wasla-genie/actions/workflows/ci-docs.yml/badge.svg)](https://github.com/The-Untitled-Org/wasla-genie/actions/workflows/ci-docs.yml)
 [![Status](https://img.shields.io/badge/status-alpha-orange?style=flat-square)]()
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
+[![Contributors](https://img.shields.io/github/contributors/The-Untitled-Org/wasla-genie?style=flat-square&color=00C896)](https://github.com/The-Untitled-Org/wasla-genie/graphs/contributors)
 
 </div>
 
@@ -22,7 +23,7 @@
 
 ## ❗ The Problem
 
-You work across multiple AI orchestrators — **Claude Code**, **Gemini CLI**, **Codex**, **OpenClaw**, **Hermes**.
+You work across multiple AI orchestrators — **Claude Code**, **Gemini CLI**, and **OpenClaw**.
 
 Each one is its own universe.
 
@@ -51,13 +52,13 @@ WaslaGenie installs itself as a **native skill inside each orchestrator** and ru
 When sync is triggered — manually or automatically — WaslaGenie:
 
 1. **Scans** the known config directories of every supported orchestrator on your machine  
-   (`~/.claude/`, `~/.gemini/`, `~/.codex/`, `~/.openclaw/`, `~/.hermes/`)
-2. **Discovers** all agents, MCPs, skills, commands, and cron jobs — wherever they were originally created
-3. **Writes a minimal stub file** into every other tool's equivalent directory — not a copy, not a duplicate — just enough for the native tool to load the original
-4. **The original file never moves.** The tool that created it owns it forever.
+   (`~/.claude/`, `~/.gemini/`, `~/.openclaw/`)
+2. **Discovers** all agents and MCPs — wherever they were originally created
+3. **Mirrors the full content** into every other tool's equivalent directory using the **"Latest is Greatest"** strategy.
+4. **No more duplication.** Whichever tool you used most recently to edit the asset becomes the source of truth for the next sync.
 
-> No file copying. No format conversion. No duplication.  
-> Just cross-references that let each tool load what the other built.
+> Full content mirroring. No complex imports. No duplication.  
+> Just seamless synchronization that lets each tool use what the other built.
 
 ---
 
@@ -111,9 +112,6 @@ The same pattern applies across every asset type:
 |---|---|---|
 | **Agents / Sub-agents** | `~/.{tool}/agents/` | All other tools' agent dirs |
 | **MCP Servers** | `~/.{tool}/mcp/` | All other tools' MCP configs |
-| **Skills / Prompts** | `~/.{tool}/skills/` | All other tools' skill dirs |
-| **Custom Commands** | `~/.{tool}/commands/` | All other tools' command dirs |
-| **Cron Jobs** | `~/.{tool}/crons/` | All other tools' cron dirs |
 
 ---
 
@@ -344,22 +342,20 @@ Nothing is ever duplicated.
 ## 🤝 Contributing
 
 ```bash
-git clone https://github.com/mosaeedhammad/wasla-genie
+git clone https://github.com/The-Untitled-Org/wasla-genie
 cd wasla-genie
 npm install
 npm run dev
 ```
 
 - [Contributing Guide](CONTRIBUTING.md)
-- [How Stubs Work](docs/how-stubs-work.md)
-- [Writing an Adapter](docs/adapters.md)
-- [Roadmap](docs/roadmap.md)
+- [Architecture Docs](docs/docs/architecture/index.md)
 
 ---
 
 ## 📄 License
 
-MIT © [Mosaeed Hammad](https://github.com/mosaeedhammad)
+MIT © [The Untitled Org](https://github.com/The-Untitled-Org)
 
 ---
 

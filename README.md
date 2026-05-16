@@ -215,15 +215,25 @@ review-pr          command    openclaw    claude ✔  gemini ✔  codex ✔  her
 
 ## 🧩 Supported Orchestrators
 
+### CLI / Terminal Agents
+
 | Tool | Auto-detect | Scan | Sync | Skill Install | Daemon |
 |---|---|---|---|---|---|
 | **Claude Code** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Gemini CLI** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **OpenAI Codex** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **OpenAI Codex CLI** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **OpenClaw** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Hermes** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Hermes** | 🔧 | 🔧 | 🔧 | 🔧 | 🔧 |
 | **Custom / BYO** | 🔧 | 🔧 | 🔧 | 🔧 | 🔧 |
 
+### IDE-based Agents
+
+| Tool | Auto-detect | Scan | Sync | Skill Install | Daemon |
+|---|---|---|---|---|---|
+| **Cursor** | 🔜 | 🔜 | 🔜 | 🔜 | 🔜 |
+| **GitHub Copilot** | 🔜 | 🔜 | 🔜 | 🔜 | 🔜 |
+
+> ✅ Supported &nbsp;·&nbsp; 🔜 Planned &nbsp;·&nbsp; 🔧 Custom adapter required  
 > Adding a new tool? See [Writing an Adapter](docs/adapters.md).
 
 ---

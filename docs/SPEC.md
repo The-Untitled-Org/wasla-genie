@@ -34,15 +34,26 @@ The original file never moves. The tool that created it owns it forever.
 
 ### 2.2 Supported Orchestrators — MVP
 
+#### CLI / Terminal Agents
+
 | Tool | MVP | Post-MVP |
 |---|---|---|
 | **Claude Code** | ✅ | — |
-| **OpenClaw** | ✅ | — |
 | **Gemini CLI** | ✅ | — |
-| OpenAI Codex | — | v1.1 |
+| **OpenAI Codex CLI** | ✅ | — |
+| **OpenClaw** | ✅ | — |
 | Hermes | — | v1.1 |
 
-**Rationale:** Claude Code, OpenClaw, and Gemini CLI give us three meaningfully different tool formats to prove the adapter pattern. If the adapter works across three distinct formats, the pattern scales.
+**Rationale:** Claude Code, Gemini CLI, OpenAI Codex CLI, and OpenClaw represent the four most-used terminal-based AI agents in developer communities. Proving the adapter pattern across four meaningfully different formats validates the architecture for the long tail.
+
+#### IDE-based Agents
+
+| Tool | MVP | Post-MVP |
+|---|---|---|
+| Cursor | — | v1.1 |
+| GitHub Copilot | — | v1.1 |
+
+**Rationale:** IDE-based tools store configs differently from CLI tools (workspace `.cursor/rules/`, `.github/copilot-instructions.md`, VS Code settings). They require a separate integration approach and are deferred to v1.1 once the CLI adapter pattern is stable.
 
 ---
 
@@ -161,15 +172,24 @@ Agent "researcher" found in 3 locations:
 
 WaslGenie scans known config directories for each installed tool:
 
+#### CLI / Terminal Agents
+
 | Tool | Agents Path | MCP Path | Status |
 |---|---|---|---|
 | **Claude Code** | `~/.claude/agents/` | `~/.claude/mcp/` (or `~/.claude/claude.json`) | ✅ Confirmed |
-| **OpenClaw** | `~/.openclaw/agents/` | `~/.openclaw/mcp/` (TBD) | ⚠️ Needs research |
 | **Gemini CLI** | `~/.gemini/agents/` | `~/.gemini/settings.json` (key: `mcpServers`) | ✅ Confirmed |
-| *(v1.1)* Codex | `~/.codex/agents/` | `~/.codex/mcp/` | — |
+| **OpenAI Codex CLI** | `~/.codex/agents/` | `~/.codex/mcp/` | ⚠️ Needs research |
+| **OpenClaw** | `~/.openclaw/agents/` | `~/.openclaw/mcp/` (TBD) | ⚠️ Needs research |
 | *(v1.1)* Hermes | `~/.hermes/agents/` | `~/.hermes/mcp/` | — |
 
-> **Critical note for OpenClaw:** Exact MCP config path/format must be researched and confirmed before OpenClaw adapter implementation. This is blocking.
+> **Critical note for OpenClaw and Codex CLI:** Exact MCP config paths/formats must be researched and confirmed before adapter implementation. These are blocking for their respective adapters.
+
+#### IDE-based Agents *(v1.1)*
+
+| Tool | Agent/Rules Path | MCP / Extensions Config | Status |
+|---|---|---|---|
+| **Cursor** | `.cursor/rules/` (workspace) | `.cursor/mcp.json` | ⚠️ Needs research |
+| **GitHub Copilot** | `.github/copilot-instructions.md` | VS Code settings (`extensions.json`) | ⚠️ Needs research |
 
 ---
 
@@ -536,7 +556,7 @@ wasl-genie/
 ## 12. Roadmap
 
 ### v0.1 — MVP
-- ✅ Claude Code + OpenClaw + Gemini CLI support
+- ✅ Claude Code + Gemini CLI + OpenAI Codex CLI + OpenClaw support
 - ✅ Agents + MCPs sync (content mirror strategy)
 - ✅ Tool-open auto-trigger (via WaslGenie skill)
 - ✅ Manual sync (`waslgenie sync`) also available
@@ -548,7 +568,8 @@ wasl-genie/
 - 🔄 Transformers concept (format conversion + vendor updates)
 
 ### v1.1
-- Codex + Hermes adapters
+- Cursor + GitHub Copilot adapters (IDE-based agent support)
+- Hermes adapter
 - Skills + Commands + Cron sync
 - Multi-profile support
 - `waslgenie watch` daemon mode (persistent background sync)
@@ -566,7 +587,8 @@ wasl-genie/
 
 - ❌ Persistent daemon / file watching (tool-open trigger is sufficient)
 - ❌ Skills, commands, cron sync (agents + MCPs only)
-- ❌ Codex, Hermes support (Claude Code, Gemini CLI, OpenClaw only)
+- ❌ IDE-based agents (Cursor, GitHub Copilot) — different config model, deferred to v1.1
+- ❌ Hermes support — deferred to v1.1
 - ❌ GUI or web dashboard
 - ❌ Team collaboration features (leave it to users to manage ~/.waslgenie/ with git)
 - ❌ Multi-profile support (single default profile only)

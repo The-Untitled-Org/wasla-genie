@@ -3,6 +3,10 @@ import { WaslaGenieAdapter, Asset } from '../core/types.js';
 export abstract class BaseAdapter implements WaslaGenieAdapter {
   abstract name: string;
   abstract displayName: string;
+  abstract mcpKey: string;
+  abstract contextFile: string;
+  abstract skillDirs: string[];
+
   abstract paths: {
     agents: string;
     mcp: string;

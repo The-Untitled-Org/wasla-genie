@@ -23,6 +23,11 @@ import { readText, writeText, fileExists, ensureDir } from '@utils/fs';
 import { ClaudeAdapter } from '@adapters/claude';
 import { GeminiAdapter } from '@adapters/gemini';
 import { OpenclawAdapter } from '@adapters/openclaw';
+import { OpenCodeAdapter } from '@adapters/opencode';
+import { CursorAdapter } from '@adapters/cursor';
+import { VscodeAdapter } from '@adapters/vscode';
+import { GithubCopilotAdapter } from '@adapters/github-copilot';
+import { GithubCliAdapter } from '@adapters/github-cli';
 import type { DiscoveredFile } from '@core/types';
 
 // ─── Success Criteria: stub markers present ────────────────────────────────
@@ -278,11 +283,16 @@ describe('Manual sync — repeated invocations', () => {
 
 // ─── Adapter tool coverage: all 3 MVP tools present ──────────────────────
 
-describe('MVP Tool Coverage — all 3 CLI adapters exist and are valid', () => {
+describe('Tool Coverage — all 8 adapters exist and are valid', () => {
   const adapters = [
     new ClaudeAdapter('workspace'),
     new GeminiAdapter('workspace'),
     new OpenclawAdapter('workspace'),
+    new OpenCodeAdapter('workspace'),
+    new CursorAdapter('workspace'),
+    new VscodeAdapter('workspace'),
+    new GithubCopilotAdapter('workspace'),
+    new GithubCliAdapter('workspace'),
   ];
 
   adapters.forEach((adapter) => {

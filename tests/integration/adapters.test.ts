@@ -17,6 +17,11 @@ import { getAdapter, getAllAdapters, getInstalledAdapters } from '@adapters/fact
 import { ClaudeAdapter } from '@adapters/claude';
 import { GeminiAdapter } from '@adapters/gemini';
 import { OpenclawAdapter } from '@adapters/openclaw';
+import { OpenCodeAdapter } from '@adapters/opencode';
+import { CursorAdapter } from '@adapters/cursor';
+import { VscodeAdapter } from '@adapters/vscode';
+import { GithubCopilotAdapter } from '@adapters/github-copilot';
+import { GithubCliAdapter } from '@adapters/github-cli';
 import { writeText, ensureDir, readText, fileExists } from '@utils/fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -109,12 +114,17 @@ describe('getInstalledAdapters', () => {
 // ─── Adapter interface contract ───────────────────────────────────────────────
 
 describe.each([
-  ['claude', ClaudeAdapter, 'Claude Code', 'md', 'json'],
-  ['gemini', GeminiAdapter, 'Gemini CLI', 'md', 'json'],
-  ['openclaw', OpenclawAdapter, 'OpenClaw', 'md', 'json'],
+  ['claude', ClaudeAdapter, 'Claude Code', 'md', 'json', 'mcpServers', 'CLAUDE.md'],
+  ['gemini', GeminiAdapter, 'Gemini CLI', 'md', 'json', 'mcpServers', 'GEMINI.md'],
+  ['openclaw', OpenclawAdapter, 'OpenClaw', 'md', 'json', 'mcp.servers', 'AGENTS.md'],
+  ['opencode', OpenCodeAdapter, 'OpenCode', 'json', 'json', 'mcpServers', 'opencode.md'],
+  ['cursor', CursorAdapter, 'Cursor', 'md', 'json', 'mcpServers', '.cursorrules'],
+  ['vscode', VscodeAdapter, 'VS Code', 'md', 'json', 'servers', '.github/copilot-instructions.md'],
+  ['github-copilot', GithubCopilotAdapter, 'GitHub Copilot', 'md', 'json', 'servers', '.github/copilot-instructions.md'],
+  ['github-cli', GithubCliAdapter, 'GitHub CLI', 'md', 'json', 'mcpServers', '.github/copilot-instructions.md'],
 ] as const)(
   '%s adapter — interface contract',
-  (toolName, AdapterClass, displayName, agentFmt, mcpFmt) => {
+  (toolName, AdapterClass, displayName, agentFmt, mcpFmt, mcpKey, contextFile) => {
     let adapter: InstanceType<typeof AdapterClass>;
 
     beforeEach(() => {
@@ -147,6 +157,18 @@ describe.each([
       expect(adapter.formats.mcp).toBe(mcpFmt);
     });
 
+    it(`mcpKey is "${mcpKey}"`, () => {
+      expect(adapter.mcpKey).toBe(mcpKey);
+    });
+
+    it(`contextFile is "${contextFile}"`, () => {
+      expect(adapter.contextFile).toBe(contextFile);
+    });
+
+    it('has skillDirs array', () => {
+      expect(Array.isArray(adapter.skillDirs)).toBe(true);
+    });
+
     it('isInstalled() returns a boolean', async () => {
       const result = await adapter.isInstalled();
       expect(typeof result).toBe('boolean');
@@ -164,6 +186,11 @@ describe.each([
   ['claude', ClaudeAdapter],
   ['gemini', GeminiAdapter],
   ['openclaw', OpenclawAdapter],
+  ['opencode', OpenCodeAdapter],
+  ['cursor', CursorAdapter],
+  ['vscode', VscodeAdapter],
+  ['github-copilot', GithubCopilotAdapter],
+  ['github-cli', GithubCliAdapter],
 ] as const)('%s adapter — writeStub (agent)', (toolName, AdapterClass) => {
   let tmpBase: string;
   let adapter: InstanceType<typeof AdapterClass>;
@@ -225,6 +252,11 @@ describe.each([
   ['claude', ClaudeAdapter],
   ['gemini', GeminiAdapter],
   ['openclaw', OpenclawAdapter],
+  ['opencode', OpenCodeAdapter],
+  ['cursor', CursorAdapter],
+  ['vscode', VscodeAdapter],
+  ['github-copilot', GithubCopilotAdapter],
+  ['github-cli', GithubCliAdapter],
 ] as const)('%s adapter — writeStub (mcp)', (toolName, AdapterClass) => {
   let tmpBase: string;
   let adapter: InstanceType<typeof AdapterClass>;

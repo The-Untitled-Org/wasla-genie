@@ -22,6 +22,10 @@ export class GeminiAdapter extends BaseAdapter {
     };
   }
 
+  mcpKey = '';
+  contextFile = '';
+  skillDirs = [];
+
   formats = {
     agents: 'md' as const,
     mcp: 'json' as const,

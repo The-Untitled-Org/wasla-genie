@@ -47,6 +47,10 @@ export interface WaslaGenieAdapter {
     mcp: string;
   };
 
+  mcpKey: string;
+  contextFile: string;
+  skillDirs: string[];
+
   formats: {
     agents: 'md' | 'yaml' | 'json';
     mcp: 'md' | 'yaml' | 'json';

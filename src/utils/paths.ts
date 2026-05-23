@@ -28,6 +28,11 @@ export function getToolMarkers(scope: 'user' | 'workspace' = 'user'): Record<str
       claude: resolve('.claude'),
       gemini: resolve('.gemini'),
       openclaw: resolve('.config/openclaw'),
+      opencode: resolve('.opencode'),
+      cursor: resolve('.cursor'),
+      vscode: resolve('.vscode'),
+      'github-copilot': resolve('.github'),
+      'github-cli': resolve('.github'),
     };
   }
 
@@ -35,6 +40,11 @@ export function getToolMarkers(scope: 'user' | 'workspace' = 'user'): Record<str
     claude: expandTilde('~/.claude'),
     gemini: expandTilde('~/.gemini'),
     openclaw: expandTilde('~/.config/openclaw'),
+    opencode: expandTilde('~/.opencode'),
+    cursor: expandTilde('~/.cursor'),
+    vscode: expandTilde('~/.config/Code/User'),
+    'github-copilot': expandTilde('~/.github'),
+    'github-cli': expandTilde('~/.copilot'),
   };
 }
 
@@ -58,6 +68,11 @@ export function getToolDisplayName(toolName: string): string {
     claude: 'Claude Code',
     gemini: 'Gemini CLI',
     openclaw: 'OpenClaw',
+    opencode: 'OpenCode',
+    cursor: 'Cursor',
+    vscode: 'VS Code',
+    'github-copilot': 'GitHub Copilot',
+    'github-cli': 'GitHub CLI',
   };
   return displayNames[toolName] || toolName;
 }

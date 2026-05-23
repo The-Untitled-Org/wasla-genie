@@ -1,3 +1,8 @@
+import { OpenCodeAdapter } from './opencode.js';
+import { CursorAdapter } from './cursor.js';
+import { VscodeAdapter } from './vscode.js';
+import { GithubCopilotAdapter } from './github-copilot.js';
+import { GithubCliAdapter } from './github-cli.js';
 import { WaslaGenieAdapter } from '../core/types.js';
 import { ClaudeAdapter } from './claude.js';
 import { GeminiAdapter } from './gemini.js';
@@ -8,6 +13,11 @@ function createAdapters(scope: 'user' | 'workspace' = 'user'): Record<string, Wa
     claude: new ClaudeAdapter(scope),
     gemini: new GeminiAdapter(scope),
     openclaw: new OpenclawAdapter(scope),
+    opencode: new OpenCodeAdapter(scope),
+    cursor: new CursorAdapter(scope),
+    vscode: new VscodeAdapter(scope),
+    'github-copilot': new GithubCopilotAdapter(scope),
+    'github-cli': new GithubCliAdapter(scope),
   };
 }
 

@@ -13,8 +13,8 @@ describe('Cross-Provider Sync: MCP Servers', () => {
 
   beforeEach(async () => {
     tmpBase = await mkdtemp(join(tmpdir(), 'waslagenie-e2e-mcp-'));
-    
-    vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
+
+    const markers = {
       claude: join(tmpBase, '.claude'),
       gemini: join(tmpBase, '.gemini'),
       openclaw: join(tmpBase, '.openclaw'),
@@ -23,7 +23,14 @@ describe('Cross-Provider Sync: MCP Servers', () => {
       vscode: join(tmpBase, '.vscode-fake'),
       'github-copilot': join(tmpBase, '.github-copilot-fake'),
       'github-cli': join(tmpBase, '.github-cli-fake'),
-    });
+    };
+
+    // Create the base directories so that isInstalled() returns true for all of them
+    for (const dir of Object.values(markers)) {
+      await ensureDir(dir);
+    }
+
+    vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue(markers);
   });
 
   afterEach(async () => {
@@ -36,7 +43,7 @@ describe('Cross-Provider Sync: MCP Servers', () => {
     const geminiMcpDir = join(tmpBase, '.gemini', 'mcp');
     await ensureDir(geminiMcpDir);
     const geminiMcpPath = join(geminiMcpDir, 'postgres.json');
-    const mcpConfig = JSON.stringify({ command: "node", args: ["postgres-mcp"] });
+    const mcpConfig = JSON.stringify({ command: 'node', args: ['postgres-mcp'] });
     await writeText(geminiMcpPath, mcpConfig);
 
     // 2. Initialize Core system
@@ -48,7 +55,7 @@ describe('Cross-Provider Sync: MCP Servers', () => {
     await syncer.sync(false);
 
     // 4. Assert that the MCP config was correctly propagated to other providers
-    
+
     // Claude (uses mcp.json)
     const claudeStub = join(tmpBase, '.claude', 'mcp', 'postgres.json');
     expect(await fileExists(claudeStub), 'Claude MCP stub should exist').toBe(true);
@@ -56,6 +63,10 @@ describe('Cross-Provider Sync: MCP Servers', () => {
 
     // Cursor (uses mcp.json)
     const cursorStub = join(tmpBase, '.cursor', 'mcp.json'); // Documented path might be singular mcp.json or mcp directory
-    expect(await fileExists(cursorStub) || await fileExists(join(tmpBase, '.cursor', 'mcp', 'postgres.json')), 'Cursor MCP stub should exist').toBe(true);
+    expect(
+      (await fileExists(cursorStub)) ||
+        (await fileExists(join(tmpBase, '.cursor', 'mcp', 'postgres.json'))),
+      'Cursor MCP stub should exist'
+    ).toBe(true);
   });
 });

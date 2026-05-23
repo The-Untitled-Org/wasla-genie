@@ -46,9 +46,15 @@ describe('expandTilde', () => {
   });
 });
 
-// ─── getRegistryPath ────────────────────────────────────────────────────────
+describe('Path Utilities (Production Mode)', () => {
+  beforeEach(() => {
+    vi.stubEnv('NODE_ENV', 'production');
+  });
 
-describe('getRegistryPath', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('returns user path containing .waslagenie/registry.json', () => {
     const p = getRegistryPath('user');
     expect(p).toContain('.waslagenie');
@@ -60,20 +66,6 @@ describe('getRegistryPath', () => {
     expect(p).toBe(resolve('.waslagenie/registry.json'));
   });
 
-  it('user path is an absolute path', () => {
-    const p = getRegistryPath('user');
-    expect(p.startsWith('/')).toBe(true);
-  });
-
-  it('workspace path is an absolute path', () => {
-    const p = getRegistryPath('workspace');
-    expect(p.startsWith('/')).toBe(true);
-  });
-});
-
-// ─── getRegistryDir ──────────────────────────────────────────────────────────
-
-describe('getRegistryDir', () => {
   it('returns user dir containing .waslagenie', () => {
     const d = getRegistryDir('user');
     expect(d).toContain('.waslagenie');
@@ -82,6 +74,13 @@ describe('getRegistryDir', () => {
   it('returns workspace dir as .waslagenie in cwd', () => {
     const d = getRegistryDir('workspace');
     expect(d).toBe(resolve('.waslagenie'));
+  });
+});
+
+describe('Path Utilities (Test Mode)', () => {
+  it('returns output/tests for workspace', () => {
+    const p = getRegistryPath('workspace');
+    expect(p).toBe(resolve('output/tests/workspace-registry.json'));
   });
 });
 

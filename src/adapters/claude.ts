@@ -22,14 +22,17 @@ export class ClaudeAdapter extends BaseAdapter {
     };
   }
 
-  mcpKey = '';
-  contextFile = '';
-  skillDirs = [];
+  mcpKey = 'mcpServers';
+  contextFile = 'CLAUDE.md';
 
   formats = {
     agents: 'md' as const,
     mcp: 'json' as const,
   };
+
+  get skillDirs() {
+    return [this.paths.agents];
+  }
 
   async isInstalled(): Promise<boolean> {
     const markers = getToolMarkers(this.scope);

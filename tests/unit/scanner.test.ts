@@ -54,7 +54,16 @@ describe('Scanner.detectInstalledTools', () => {
   it('never returns unknown tool names', async () => {
     const scanner = new Scanner('workspace');
     const tools = await scanner.detectInstalledTools();
-    const valid = new Set(['claude', 'gemini', 'openclaw', 'codex']);
+    const valid = new Set([
+      'claude',
+      'gemini',
+      'openclaw',
+      'opencode',
+      'cursor',
+      'vscode',
+      'github-copilot',
+      'github-cli',
+    ]);
     tools.forEach((t) => expect(valid.has(t)).toBe(true));
   });
 });

@@ -13,9 +13,8 @@ describe('Cross-Provider Sync: Agents', () => {
 
   beforeEach(async () => {
     tmpBase = await mkdtemp(join(tmpdir(), 'waslagenie-e2e-agents-'));
-    
-    // Mock the tool markers to point to our temp directory
-    vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
+
+    const markers = {
       claude: join(tmpBase, '.claude'),
       gemini: join(tmpBase, '.gemini'),
       openclaw: join(tmpBase, '.openclaw'),
@@ -24,7 +23,15 @@ describe('Cross-Provider Sync: Agents', () => {
       vscode: join(tmpBase, '.vscode-fake'),
       'github-copilot': join(tmpBase, '.github-copilot-fake'),
       'github-cli': join(tmpBase, '.github-cli-fake'),
-    });
+    };
+
+    // Create the base directories so that isInstalled() returns true for all of them
+    for (const dir of Object.values(markers)) {
+      await ensureDir(dir);
+    }
+
+    // Mock the tool markers to point to our temp directory
+    vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue(markers);
   });
 
   afterEach(async () => {
@@ -48,7 +55,7 @@ describe('Cross-Provider Sync: Agents', () => {
     await syncer.sync(false);
 
     // 4. Assert that the agent was correctly propagated to other providers
-    
+
     // Gemini
     const geminiStub = join(tmpBase, '.gemini', 'agents', 'researcher.md');
     expect(await fileExists(geminiStub), 'Gemini agent stub should exist').toBe(true);
@@ -65,7 +72,7 @@ describe('Cross-Provider Sync: Agents', () => {
     expect(await readText(vscodeStub)).toContain('waslagenie-stub');
 
     // OpenCode (uses .opencode/commands)
-    const opencodeStub = join(tmpBase, '.opencode', 'commands', 'researcher.md');
+    const opencodeStub = join(tmpBase, '.opencode', 'commands', 'researcher.json');
     expect(await fileExists(opencodeStub), 'OpenCode command stub should exist').toBe(true);
     expect(await readText(opencodeStub)).toContain('waslagenie-stub');
   });

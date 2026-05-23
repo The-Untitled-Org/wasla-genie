@@ -81,9 +81,9 @@ describe('getAdapter', () => {
 // ─── Factory: getAllAdapters ──────────────────────────────────────────────────
 
 describe('getAllAdapters', () => {
-  it('returns exactly 3 adapters (claude, gemini, openclaw)', () => {
+  it('returns exactly 8 adapters', () => {
     const adapters = getAllAdapters('workspace');
-    expect(adapters).toHaveLength(3);
+    expect(adapters).toHaveLength(8);
   });
 
   it('contains all three MVP tool names', () => {
@@ -120,8 +120,24 @@ describe.each([
   ['opencode', OpenCodeAdapter, 'OpenCode', 'json', 'json', 'mcpServers', 'opencode.md'],
   ['cursor', CursorAdapter, 'Cursor', 'md', 'json', 'mcpServers', '.cursorrules'],
   ['vscode', VscodeAdapter, 'VS Code', 'md', 'json', 'servers', '.github/copilot-instructions.md'],
-  ['github-copilot', GithubCopilotAdapter, 'GitHub Copilot', 'md', 'json', 'servers', '.github/copilot-instructions.md'],
-  ['github-cli', GithubCliAdapter, 'GitHub CLI', 'md', 'json', 'mcpServers', '.github/copilot-instructions.md'],
+  [
+    'github-copilot',
+    GithubCopilotAdapter,
+    'GitHub Copilot',
+    'md',
+    'json',
+    'servers',
+    '.github/copilot-instructions.md',
+  ],
+  [
+    'github-cli',
+    GithubCliAdapter,
+    'GitHub CLI',
+    'md',
+    'json',
+    'mcpServers',
+    '.github/copilot-instructions.md',
+  ],
 ] as const)(
   '%s adapter — interface contract',
   (toolName, AdapterClass, displayName, agentFmt, mcpFmt, mcpKey, contextFile) => {

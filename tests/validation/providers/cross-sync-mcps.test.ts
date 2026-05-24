@@ -7,6 +7,7 @@ import * as pathUtils from '@utils/paths';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { mkdtemp, rm } from 'fs/promises';
+import { getGeminiMcpConfig } from '../../fixtures';
 
 describe('Cross-Provider Sync: MCP Servers', () => {
   let tmpBase: string;
@@ -43,7 +44,7 @@ describe('Cross-Provider Sync: MCP Servers', () => {
     const geminiMcpDir = join(tmpBase, '.gemini', 'mcp');
     await ensureDir(geminiMcpDir);
     const geminiMcpPath = join(geminiMcpDir, 'postgres.json');
-    const mcpConfig = JSON.stringify({ command: 'node', args: ['postgres-mcp'] });
+    const mcpConfig = getGeminiMcpConfig();
     await writeText(geminiMcpPath, mcpConfig);
 
     // 2. Initialize Core system

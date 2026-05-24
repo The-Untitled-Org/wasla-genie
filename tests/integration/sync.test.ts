@@ -20,6 +20,7 @@ import { writeText, ensureDir, readText, fileExists, readJSON } from '@utils/fs'
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { mkdtemp, rm, utimes } from 'fs/promises';
+import { getClaudeAgentConfig, getGeminiAgentConfig, getStubMarker } from '../fixtures';
 import type { Registry } from '@core/types';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -151,7 +152,7 @@ describe('Sync — Latest-is-Greatest (real file fixture)', () => {
     const agentDir = join(tmpBase, 'agents');
     await ensureDir(agentDir);
     const stubPath = join(agentDir, 'stub.md');
-    await writeText(stubPath, '<!-- waslagenie-stub -->\nYou are a stub agent.');
+    await writeText(stubPath, getStubMarker() + getClaudeAgentConfig('stub'));
 
     const content = await readText(stubPath);
     expect(content.includes('waslagenie-stub') || content.includes('waslagenie')).toBe(true);
@@ -161,7 +162,7 @@ describe('Sync — Latest-is-Greatest (real file fixture)', () => {
     const agentDir = join(tmpBase, 'agents');
     await ensureDir(agentDir);
     const origPath = join(agentDir, 'researcher.md');
-    await writeText(origPath, 'You are a researcher. No waslagenie marker here.');
+    await writeText(origPath, getClaudeAgentConfig('researcher'));
 
     const content = await readText(origPath);
     expect(content.includes('waslagenie-stub')).toBe(false);

@@ -7,6 +7,7 @@ import * as pathUtils from '@utils/paths';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { mkdtemp, rm } from 'fs/promises';
+import { getClaudeAgentConfig } from '../../fixtures';
 
 describe('Cross-Provider Sync: Agents', () => {
   let tmpBase: string;
@@ -44,7 +45,7 @@ describe('Cross-Provider Sync: Agents', () => {
     const claudeAgentDir = join(tmpBase, '.claude', 'agents');
     await ensureDir(claudeAgentDir);
     const claudeAgentPath = join(claudeAgentDir, 'researcher.md');
-    await writeText(claudeAgentPath, 'You are an AI researcher.');
+    await writeText(claudeAgentPath, getClaudeAgentConfig('researcher'));
 
     // 2. Initialize Core system
     const registry = new RegistryManager('workspace');

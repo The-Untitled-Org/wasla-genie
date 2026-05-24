@@ -13,7 +13,7 @@ export async function statusCommand(options: StatusOptions): Promise<void> {
     const registryPath = getRegistryPath(scope);
 
     if (!(await fileExists(registryPath))) {
-      error('Registry not found. Run: waslagenie install && waslagenie sync');
+      error('Registry not found. Run: waslagenie sync');
       process.exit(1);
     }
 

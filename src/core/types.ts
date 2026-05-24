@@ -1,5 +1,6 @@
 // Asset types
-export type AssetType = 'agent' | 'mcp';
+export type AssetType = 'agent' | 'skill' | 'mcp' | 'context';
+export type AssetFormat = 'md' | 'yaml' | 'json' | 'mdc' | 'agent.md' | 'instructions.md';
 
 export interface Asset {
   id: string; // UUID v4
@@ -43,8 +44,10 @@ export interface WaslaGenieAdapter {
   displayName: string;
 
   paths: {
-    agents: string;
-    mcp: string;
+    agent?: string;
+    skill?: string;
+    mcp?: string;
+    context?: string;
   };
 
   mcpKey: string;
@@ -52,11 +55,15 @@ export interface WaslaGenieAdapter {
   skillDirs: string[];
 
   formats: {
-    agents: 'md' | 'yaml' | 'json';
-    mcp: 'md' | 'yaml' | 'json';
+    agent?: AssetFormat;
+    skill?: AssetFormat;
+    mcp?: AssetFormat;
+    context?: AssetFormat;
   };
 
   isInstalled(): Promise<boolean>;
+  mcpFromNative(server: Record<string, unknown>): Record<string, unknown>;
+  mcpToNative(server: Record<string, unknown>): Record<string, unknown>;
   writeStub(asset: Asset, content: string, targetPath: string): Promise<void>;
   installSkill(): Promise<void>;
   getRootConfigAppend(): string | null;
@@ -64,12 +71,14 @@ export interface WaslaGenieAdapter {
 
 // Scanner types
 export interface DiscoveredFile {
-  path: string;
+  path: string; // Full absolute path
+  relativePath: string; // Relative path within type dir (e.g., "waslagenie/SKILL.md" for skills)
   isStub: boolean;
   tool: string;
   type: AssetType;
-  name: string;
+  name: string; // Asset name extracted from relative path
   modifiedAt: number; // Unix timestamp in ms
+  content?: string; // Pre-extracted content for assets embedded in structured config files
 }
 
 // CLI types

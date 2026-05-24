@@ -15,12 +15,13 @@ This section provides detailed configuration guides for integrating WaslaGenie w
 | Provider | Agent Format | MCP Config | Skills/Instructions | Context File |
 |----------|-------------|------------|-------------------|--------------|
 | [Claude Code](./claude.md) | `.claude/agents/*.md` (YAML frontmatter) | `.mcp.json` (`mcpServers`) | `.claude/skills/*/SKILL.md` | `CLAUDE.md` |
-| [Gemini CLI](./gemini.md) | `GEMINI.md` + skills (no discrete agents) | `.gemini/settings.json` (`mcpServers`) | `.gemini/skills/*/SKILL.md` | `GEMINI.md` |
-| [OpenClaw](./openclaw.md) | `AGENTS.md` workspace file | `openclaw.json` (`mcp.servers`) | `~/.openclaw/skills/*/SKILL.md` | `AGENTS.md` |
-| [OpenCode](./opencode.md) | `.opencode.json` (agent config) | `.opencode.json` (`mcpServers`) | Context files (no SKILL.md) | `opencode.md` |
-| [Cursor](./cursor.md) | `.cursor/rules/*.mdc` (rules system) | `.cursor/mcp.json` (`mcpServers`) | `.mdc` rule files | `.cursorrules` |
-| [VS Code](./vscode.md) | `.github/copilot-instructions.md` | `.vscode/mcp.json` (`servers`) | `.github/instructions/*.instructions.md` | `copilot-instructions.md` |
-| [GitHub Copilot](./github-copilot.md) | `.github/copilot-instructions.md` | `.vscode/mcp.json` (`servers`) | Instruction files + MCP | `copilot-instructions.md` |
-| [GitHub CLI](./github-cli.md) | Interactive session | `~/.copilot/mcp-config.json` (`mcpServers`) | MCP tools + instructions | `copilot-instructions.md` |
+| [Gemini CLI](./gemini.md) | `.gemini/agents/*.md` | `.gemini/settings.json` (`mcpServers`) | `.gemini/skills/*/SKILL.md` | `GEMINI.md` |
+| [OpenClaw](./openclaw.md) | Experimental: native contract still being verified | Experimental | Experimental | `AGENTS.md` |
+| [OpenCode](./opencode.md) | `.opencode/agents/*.md` | `opencode.json` (`mcp`) | `.opencode/skills/*/SKILL.md` | `AGENTS.md` |
+| [Cursor](./cursor.md) | `.cursor/agents/*.md` | `.cursor/mcp.json` (`mcpServers`) | `.cursor/skills/*/SKILL.md` | `AGENTS.md` |
+| [GitHub Copilot](./github-copilot.md) | `.github/agents/*.agent.md` | `.vscode/mcp.json` (`servers`) | `.github/skills/*/SKILL.md` | `.github/copilot-instructions.md` |
+| [GitHub Copilot CLI](./github-copilot-cli.md) | `.github/agents/*.agent.md` | `.mcp.json` / `~/.copilot/mcp-config.json` (`mcpServers`) | `.github/skills/*/SKILL.md` | `.github/copilot-instructions.md` |
+
+WaslaGenie models `agent`, `skill`, `mcp`, and project `context` as portable assets, then writes each asset to the destination provider's native location and configuration shape. Rules and scoped instruction files are not aliases for agents or skills.
 
 Choose a provider from the list above or the sidebar to learn how to configure agents, MCPs, and skills for that specific tool.

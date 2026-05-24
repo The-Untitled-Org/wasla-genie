@@ -13,6 +13,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Scanner } from '@core/scanner';
 import type { DiscoveredFile } from '@core/types';
+import * as pathUtils from '@utils/paths';
 
 vi.mock('fs/promises', async (importActual) => {
   const actual = await importActual<typeof import('fs/promises')>();
@@ -27,6 +28,7 @@ vi.mock('fs/promises', async (importActual) => {
 function makeFile(overrides: Partial<DiscoveredFile> = {}): DiscoveredFile {
   return {
     path: '~/.claude/agents/researcher.md',
+    relativePath: 'researcher.md',
     isStub: false,
     tool: 'claude',
     type: 'agent',
@@ -60,9 +62,8 @@ describe('Scanner.detectInstalledTools', () => {
       'openclaw',
       'opencode',
       'cursor',
-      'vscode',
       'github-copilot',
-      'github-cli',
+      'github-copilot-cli',
     ]);
     tools.forEach((t) => expect(valid.has(t)).toBe(true));
   });
@@ -241,26 +242,23 @@ describe('Scanner.scanTool & scanAllTools', () => {
   it('skips non-directories and handles stub detection', async () => {
     const fs = await import('@utils/fs');
     const fsp = await import('fs/promises');
+    const stubPath = '/tmp/claude/skills/testfile.md';
 
-    // Mock fs functions
     const isDirSpy = vi
       .spyOn(fs, 'isDirectory')
       .mockResolvedValueOnce(false) // First loop skips
       .mockResolvedValueOnce(true); // Second loop passes
 
-    vi.spyOn(fs, 'listFiles').mockResolvedValue(['testfile.md']);
-
-    vi.spyOn(fs, 'readText')
-      .mockResolvedValueOnce('waslagenie-stub: yes') // identifies as stub
-      .mockRejectedValueOnce(new Error('unreadable')); // handles catch block in isStubFile
-
-    // Mock fs/promises stat
     const statSpy = vi.spyOn(fsp, 'stat').mockResolvedValue({ mtimeMs: 1234 } as any);
 
     const scanner = new Scanner('workspace');
+    vi.spyOn(scanner as any, 'recursivelyFindFiles').mockResolvedValue([stubPath]);
+    (scanner as any).stubPaths.add(stubPath);
+    vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
+      claude: '/tmp/claude',
+    });
 
-    // Scan standard tool
-    const res = await scanner.scanTool('claude', ['agent', 'mcp']);
+    const res = await scanner.scanTool('claude', ['agent', 'skill']);
 
     expect(res).toHaveLength(1);
     expect(res[0].isStub).toBe(true);
@@ -272,18 +270,21 @@ describe('Scanner.scanTool & scanAllTools', () => {
     vi.restoreAllMocks();
   });
 
-  it('isStubFile catch block returns false', async () => {
+  it('returns false for a discovered file absent from the stub registry', async () => {
     const fs = await import('@utils/fs');
     const fsp = await import('fs/promises');
 
     vi.spyOn(fs, 'isDirectory').mockResolvedValue(true);
-    vi.spyOn(fs, 'listFiles').mockResolvedValue(['unreadable.md']);
-    vi.spyOn(fs, 'readText').mockRejectedValue(new Error('fail'));
-
     const statSpy = vi.spyOn(fsp, 'stat').mockResolvedValue({ mtimeMs: 5555 } as any);
 
     const scanner = new Scanner('workspace');
-    const res = await scanner.scanTool('gemini', ['agent']);
+    vi.spyOn(scanner as any, 'recursivelyFindFiles').mockResolvedValue([
+      '/tmp/gemini/skills/unreadable/SKILL.md',
+    ]);
+    vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
+      gemini: '/tmp/gemini',
+    });
+    const res = await scanner.scanTool('gemini', ['skill']);
     expect(res[0].isStub).toBe(false);
 
     statSpy.mockRestore();

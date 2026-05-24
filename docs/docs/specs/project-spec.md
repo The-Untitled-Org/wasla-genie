@@ -53,14 +53,16 @@ The original file never moves. The tool that created it owns it forever.
 | Cursor | — | v1.1 |
 | GitHub Copilot | — | v1.1 |
 
-**Rationale:** IDE-based tools store configs differently from CLI tools (workspace `.cursor/rules/`, `.github/copilot-instructions.md`, VS Code settings). They require a separate integration approach and are deferred to v1.1 once the CLI adapter pattern is stable.
+**Rationale:** IDE-hosted tools store agents, skills, context, and MCP configuration on separate native surfaces. The adapter layer now targets Cursor and GitHub Copilot native agent and skill directories rather than treating instruction files as agent substitutes.
 
 ---
 
 ### 2.3 MVP Commands
 
 ```bash
-npx wasla-genie install     # detect tools, register WaslaGenie skill in each
+npx wasla-genie sync        # run without global install
+npm install -g wasla-genie  # optional: install the CLI executable
+waslagenie register         # optional: register WaslaGenie helper skill in each tool
 waslagenie sync             # manual: scan, discover, write stubs (also called automatically on tool open)
 waslagenie status           # show all discovered assets and stub state
 waslagenie config           # set scope (user vs workspace)
@@ -126,8 +128,8 @@ You are a researcher agent. Your job is to...
 - **Latest edit wins** — whichever version was modified most recently becomes the source
 - No permanent ownership — assets can be authored in any tool
 - On sync, all other locations get the latest version
-- WaslaGenie never deletes assets, only mirrors them
-- Original files in any tool location are never deleted by WaslaGenie
+- A deletion propagates when all remaining synchronized copies are unchanged from their last synced hash
+- If another copy was edited after sync, that surviving edit wins instead of being deleted
 
 ---
 
@@ -213,8 +215,10 @@ WaslaGenie scans known config directories for each installed tool:
 
 | Tool | Agent/Rules Path | MCP / Extensions Config | Status |
 |---|---|---|---|
-| **Cursor** | `.cursor/rules/` (workspace) | `.cursor/mcp.json` | ⚠️ Needs research |
-| **GitHub Copilot** | `.github/copilot-instructions.md` | VS Code settings (`extensions.json`) | ⚠️ Needs research |
+| **OpenCode** | `.opencode/agents/` / `.opencode/skills/` | `opencode.json` (key: `mcp`) | ✅ Confirmed |
+| **Cursor** | `.cursor/agents/` / `.cursor/skills/` | `.cursor/mcp.json` | ✅ Confirmed |
+| **GitHub Copilot** | `.github/agents/` / `.github/skills/` | `.vscode/mcp.json` (key: `servers`) | ✅ Confirmed |
+| **GitHub Copilot CLI** | `.github/agents/` / `.github/skills/` | `.mcp.json` / `~/.copilot/mcp-config.json` | ✅ Confirmed |
 
 ---
 
@@ -353,9 +357,9 @@ interface WaslaGenieAdapter {
 
 ## 7. CLI Specification
 
-### `npx wasla-genie install`
+### `waslagenie register`
 
-Runs once on first setup.
+Runs only when the user explicitly wants WaslaGenie helper skills inside installed tools.
 
 ```
 🔍  Detecting installed orchestrators...
@@ -366,7 +370,7 @@ Runs once on first setup.
   ✗  Codex           not found
   ✗  Hermes          not found
 
-📦  Installing WaslaGenie skill...
+📦  Registering WaslaGenie helper skills...
 
   ✔  Registered in Claude Code
   ✔  Registered in OpenClaw
@@ -375,7 +379,7 @@ Runs once on first setup.
 ⚙️  Scope: user (~/.waslagenie/)
     Change anytime with: waslagenie config --scope workspace
 
-✨  Installation complete. Run waslagenie sync to start.
+✨  Registration complete. Run waslagenie sync to start.
 ```
 
 ---
@@ -455,22 +459,16 @@ waslagenie config --show              # print current config
 
 ## 8. File Modification Rules
 
-WaslaGenie may append to — but never overwrite or delete from — the following original files:
+WaslaGenie mirrors synchronized assets into each provider's native file location:
 
-| File | What WaslaGenie May Append |
+| Asset | Behavior |
 |---|---|
-| `CLAUDE.md` | WaslaGenie skill registration block |
-| `GEMINI.md` | WaslaGenie skill registration block |
-| Tool root config files | Import/include references for synced MCPs |
+| Skills and agents | Copy latest content to supported provider destinations |
+| Context files | Copy the latest context into each provider's native context path |
+| MCP configuration | Merge each synchronized server into the target provider JSON format |
+| Deleted synchronized asset | Remove unchanged mirrored copies; preserve and resync a modified survivor |
 
-**All appended blocks are clearly marked:**
-```markdown
-<!-- waslagenie:start -->
-...managed content...
-<!-- waslagenie:end -->
-```
-
-WaslaGenie will only ever touch content between its own markers. Everything outside is untouched.
+Provider configuration outside synchronized assets is left untouched.
 
 ---
 
@@ -588,7 +586,7 @@ wasla-genie/
 - ✅ Conflict resolution (interactive, Latest-is-Greatest)
 - ✅ Orphan handling (.bak)
 - ✅ User + workspace scope
-- ✅ `npx wasla-genie install`
+- ✅ `npx wasla-genie sync` + optional `waslagenie register`
 - ✅ Export/import for backup (`waslagenie export`, `waslagenie import`)
 - ✅ Gradual centralization foundation (`~/.waslagenie/` as optional canonical location)
 - 🔄 Transformers concept (format conversion + vendor updates)

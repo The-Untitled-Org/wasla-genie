@@ -3,15 +3,30 @@ import { Scanner } from '../../core/scanner.js';
 import { Syncer } from '../../syncer/index.js';
 import { section, error, highlight, spacer } from '../../utils/cli-output.js';
 
-interface SyncOptions {
+interface SyncToOptions {
   scope?: string;
+  from?: string;
+  to?: string;
 }
 
-export async function syncCommand(options: SyncOptions): Promise<void> {
+export async function syncToCommand(options: SyncToOptions): Promise<void> {
   try {
     const scope = (options.scope || 'workspace') as 'user' | 'workspace';
+    const from = options.from;
+    const to = options.to;
 
-    section('Scanning...');
+    if (!from || !to) {
+      error('Error: --from and --to are required');
+      console.log(
+        'Usage: waslagenie sync-to --from <source> --to <target> [--scope workspace|user]'
+      );
+      console.log('Example: waslagenie sync-to --from gemini --to claude');
+      process.exit(1);
+    }
+
+    const targets = to.split(',').map((t) => t.trim());
+
+    section(`Syncing from ${from} to ${targets.join(', ')}...`);
     spacer();
 
     const registry = new RegistryManager(scope);
@@ -20,7 +35,7 @@ export async function syncCommand(options: SyncOptions): Promise<void> {
     const scanner = new Scanner(scope);
     const syncer = new Syncer(registry, scanner, scope);
 
-    const result = await syncer.sync(true);
+    const result = await syncer.syncToTool(from, targets);
 
     spacer();
     highlight('Sync complete!');

@@ -10,9 +10,10 @@
  *  - Registry is persisted and reloadable after sync
  *  - Multiple assets synced in a single pass
  *  - MCP type assets are handled alongside agent type assets
+ *  - Bootstrap: tool folder exists without agents/ → sync creates context file
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Syncer } from '@syncer/index';
 import { RegistryManager } from '@core/registry';
 import { Scanner } from '@core/scanner';
@@ -21,12 +22,49 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { mkdtemp, rm, utimes } from 'fs/promises';
 import type { Registry } from '@core/types';
+import * as pathUtils from '@utils/paths';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 async function makeTmpDir(): Promise<string> {
   return mkdtemp(join(tmpdir(), 'waslagenie-sync-'));
 }
+
+let isolatedWorkspace: string;
+
+beforeEach(async () => {
+  isolatedWorkspace = await makeTmpDir();
+  vi.spyOn(pathUtils, 'getToolMarkers').mockImplementation((scope) =>
+    scope === 'user'
+      ? {
+          claude: join(isolatedWorkspace, 'user', '.claude'),
+          gemini: join(isolatedWorkspace, 'user', '.gemini'),
+          openclaw: join(isolatedWorkspace, 'user', '.openclaw'),
+          opencode: join(isolatedWorkspace, 'user', '.config', 'opencode'),
+          cursor: join(isolatedWorkspace, 'user', '.cursor'),
+          'github-copilot': join(isolatedWorkspace, 'user', '.config', 'Code', 'User'),
+          'github-copilot-cli': join(isolatedWorkspace, 'user', '.copilot'),
+        }
+      : {
+          claude: join(isolatedWorkspace, '.claude'),
+          gemini: join(isolatedWorkspace, '.gemini'),
+          openclaw: join(isolatedWorkspace, '.openclaw'),
+          opencode: join(isolatedWorkspace, '.opencode'),
+          cursor: join(isolatedWorkspace, '.cursor'),
+          'github-copilot': join(isolatedWorkspace, '.vscode'),
+          'github-copilot-cli': join(isolatedWorkspace, '.github'),
+        }
+  );
+  vi.spyOn(pathUtils, 'getRegistryPath').mockImplementation((scope) =>
+    join(isolatedWorkspace, '.waslagenie', `${scope}-registry.json`)
+  );
+  vi.spyOn(pathUtils, 'getRegistryDir').mockReturnValue(join(isolatedWorkspace, '.waslagenie'));
+});
+
+afterEach(async () => {
+  vi.restoreAllMocks();
+  await rm(isolatedWorkspace, { recursive: true, force: true });
+});
 
 /** Create a fake tool directory with a given agent file */
 async function seedAgentFile(
@@ -195,5 +233,85 @@ describe('Sync — idempotency', () => {
 
     // Assets discovered should be stable across runs
     expect(second.assetsDiscovered).toBe(first.assetsDiscovered);
+  });
+});
+
+// ─── Bootstrap on sync ────────────────────────────────────────────────────────
+
+import { syncCommand } from '@cli/commands/sync.js';
+import { ClaudeAdapter } from '@adapters/claude';
+import { GeminiAdapter } from '@adapters/gemini';
+
+describe('Sync — bootstrap installed adapter that has no agents/ dir', () => {
+  let tmpBase: string;
+
+  beforeEach(async () => {
+    tmpBase = await makeTmpDir();
+  });
+
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    await rm(tmpBase, { recursive: true, force: true });
+  });
+
+  it('installSkill() is idempotent when called twice on ClaudeAdapter', async () => {
+    const claudeDir = join(tmpBase, '.claude');
+    await ensureDir(claudeDir);
+
+    // Mock getToolMarkers to point to tmpBase
+    vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
+      claude: claudeDir,
+      gemini: join(tmpBase, '.gemini'),
+      openclaw: join(tmpBase, '.openclaw'),
+      opencode: join(tmpBase, '.opencode'),
+      cursor: join(tmpBase, '.cursor'),
+      'github-copilot': join(tmpBase, '.vscode-fake'),
+      'github-copilot-cli': join(tmpBase, '.github-fake'),
+    });
+
+    const adapter = new ClaudeAdapter('workspace');
+    await adapter.installSkill();
+    await adapter.installSkill(); // second call — must be idempotent
+
+    const skillPath = join(claudeDir, 'skills', 'waslagenie', 'SKILL.md');
+    expect(await fileExists(skillPath)).toBe(true);
+
+    const content = await readText(skillPath);
+    expect(content).toContain('WaslaGenie Operator');
+    expect(await fileExists(join(claudeDir, 'CLAUDE.md'))).toBe(false); // CLAUDE.md not created
+  });
+
+  it('does not register a helper skill during sync', async () => {
+    // Simulate: user created `.claude/` manually, no subfolders
+    const claudeDir = join(tmpBase, '.claude');
+    await ensureDir(claudeDir);
+
+    const agentsDir = join(claudeDir, 'agents');
+    const skillPath = join(agentsDir, 'waslagenie.md');
+    const contextPath = join(claudeDir, 'CLAUDE.md');
+
+    // Precondition: no agents/ dir, no skill file, no context file
+    expect(await fileExists(agentsDir)).toBe(false);
+    expect(await fileExists(skillPath)).toBe(false);
+    expect(await fileExists(contextPath)).toBe(false);
+
+    // Setup mock tool markers to point to our temp dir
+    vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
+      claude: claudeDir,
+      gemini: join(tmpBase, '.gemini'),
+      openclaw: join(tmpBase, '.openclaw'),
+      opencode: join(tmpBase, '.opencode'),
+      cursor: join(tmpBase, '.cursor'),
+      'github-copilot': join(tmpBase, '.vscode-fake'),
+      'github-copilot-cli': join(tmpBase, '.github-fake'),
+    });
+
+    // Run syncCommand
+    await syncCommand({ scope: 'workspace' });
+
+    // Registration is opt-in through `waslagenie register`.
+    expect(await fileExists(agentsDir)).toBe(false);
+    expect(await fileExists(skillPath)).toBe(false);
+    expect(await fileExists(contextPath)).toBe(false);
   });
 });

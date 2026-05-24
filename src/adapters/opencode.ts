@@ -1,7 +1,7 @@
 import { BaseAdapter } from './base.js';
 import { Asset } from '../core/types.js';
 import { fileExists, writeText, ensureDir } from '../utils/fs.js';
-import { join } from 'path';
+import { dirname, join } from 'path';
 import { getToolMarkers } from '../utils/paths.js';
 
 export class OpenCodeAdapter extends BaseAdapter {
@@ -17,27 +17,79 @@ export class OpenCodeAdapter extends BaseAdapter {
   get paths() {
     const markers = getToolMarkers(this.scope);
     const base = markers['opencode'];
+    const configPath =
+      this.scope === 'workspace'
+        ? join(dirname(base), 'opencode.json')
+        : join(base, 'opencode.json');
     return {
-      agents: join(base, 'commands'),
-      mcp: join(base, 'mcp'),
+      agent: join(base, 'agents'),
+      skill: join(base, 'skills'),
+      mcp: configPath,
+      context:
+        this.scope === 'workspace' ? join(dirname(base), 'AGENTS.md') : join(base, 'AGENTS.md'),
     };
   }
 
-  mcpKey = 'mcpServers';
-  contextFile = 'opencode.md';
+  mcpKey = 'mcp';
+  contextFile = 'AGENTS.md';
 
   get skillDirs() {
-    return [this.paths.agents];
+    return [this.paths.skill!];
   }
 
   formats = {
-    agents: 'json' as const,
+    agent: 'md' as const,
+    skill: 'md' as const,
     mcp: 'json' as const,
+    context: 'md' as const,
   };
 
   async isInstalled(): Promise<boolean> {
-    const markers = getToolMarkers(this.scope);
-    return fileExists(markers['opencode']);
+    const base = getToolMarkers(this.scope).opencode;
+    return (
+      (await fileExists(base)) ||
+      (await fileExists(this.paths.mcp!)) ||
+      (await fileExists(this.paths.agent!)) ||
+      (await fileExists(this.paths.skill!))
+    );
+  }
+
+  mcpFromNative(server: Record<string, unknown>): Record<string, unknown> {
+    if (server.type === 'local' && Array.isArray(server.command)) {
+      const [command, ...args] = server.command;
+      return {
+        command,
+        args,
+        ...(server.environment ? { env: server.environment } : {}),
+      };
+    }
+    if (server.type === 'remote') {
+      return {
+        url: server.url,
+        ...(server.headers ? { headers: server.headers } : {}),
+      };
+    }
+    return server;
+  }
+
+  mcpToNative(server: Record<string, unknown>): Record<string, unknown> {
+    if (typeof server.command === 'string') {
+      return {
+        type: 'local',
+        command: [server.command, ...(Array.isArray(server.args) ? server.args : [])],
+        enabled: true,
+        ...(server.env ? { environment: server.env } : {}),
+      };
+    }
+    if (typeof server.url === 'string') {
+      return {
+        type: 'remote',
+        url: server.url,
+        enabled: true,
+        ...(server.headers ? { headers: server.headers } : {}),
+      };
+    }
+    return server;
   }
 
   async writeStub(asset: Asset, content: string, targetPath: string): Promise<void> {
@@ -49,15 +101,13 @@ export class OpenCodeAdapter extends BaseAdapter {
   }
 
   private async writeAgentStub(targetPath: string, content: string): Promise<void> {
-    await ensureDir(this.paths.agents);
-    const marked = `<!-- waslagenie-stub -->\n${content}`;
-    await writeText(targetPath, marked);
+    await ensureDir(dirname(targetPath));
+    await writeText(targetPath, content);
   }
 
   private async writeMcpStub(targetPath: string, content: string): Promise<void> {
-    await ensureDir(this.paths.mcp);
-    const marked = `/* waslagenie-stub */\n${content}`;
-    await writeText(targetPath, marked);
+    await ensureDir(dirname(targetPath));
+    await writeText(targetPath, content);
   }
 
   async installSkill(): Promise<void> {

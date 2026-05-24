@@ -1,7 +1,7 @@
 import { BaseAdapter } from './base.js';
 import { Asset } from '../core/types.js';
-import { fileExists, writeText, readText, ensureDir } from '../utils/fs.js';
-import { join } from 'path';
+import { fileExists, writeText, ensureDir } from '../utils/fs.js';
+import { dirname, join } from 'path';
 import { getToolMarkers } from '../utils/paths.js';
 
 export class GeminiAdapter extends BaseAdapter {
@@ -16,9 +16,15 @@ export class GeminiAdapter extends BaseAdapter {
 
   get paths() {
     const markers = getToolMarkers(this.scope);
+    const workspaceRoot = dirname(markers.gemini);
     return {
-      agents: join(markers.gemini, 'agents'),
-      mcp: join(markers.gemini, 'mcp'),
+      agent: join(markers.gemini, 'agents'),
+      skill: join(markers.gemini, 'skills'),
+      mcp: join(markers.gemini, 'settings.json'),
+      context:
+        this.scope === 'workspace'
+          ? join(workspaceRoot, 'GEMINI.md')
+          : join(markers.gemini, 'GEMINI.md'),
     };
   }
 
@@ -26,12 +32,14 @@ export class GeminiAdapter extends BaseAdapter {
   contextFile = 'GEMINI.md';
 
   formats = {
-    agents: 'md' as const,
+    agent: 'md' as const,
+    skill: 'md' as const,
     mcp: 'json' as const,
+    context: 'md' as const,
   };
 
   get skillDirs() {
-    return [this.paths.agents];
+    return [this.paths.skill!!];
   }
 
   async isInstalled(): Promise<boolean> {
@@ -40,72 +48,58 @@ export class GeminiAdapter extends BaseAdapter {
   }
 
   async writeStub(asset: Asset, content: string, targetPath: string): Promise<void> {
-    if (asset.type === 'agent') {
-      await this.writeAgentStub(targetPath, content);
+    if (asset.type === 'agent' || asset.type === 'skill') {
+      await this.writeSkillStub(targetPath, content);
     } else {
       await this.writeMcpStub(targetPath, content);
     }
   }
 
-  private async writeAgentStub(targetPath: string, content: string): Promise<void> {
-    await ensureDir(this.paths.agents);
-    const marked = `<!-- waslagenie-stub -->\n${content}`;
-    await writeText(targetPath, marked);
+  private async writeSkillStub(targetPath: string, content: string): Promise<void> {
+    await ensureDir(dirname(targetPath));
+    await writeText(targetPath, content);
   }
 
   private async writeMcpStub(targetPath: string, content: string): Promise<void> {
-    await ensureDir(this.paths.mcp);
-    const marked = `/* waslagenie-stub */\n${content}`;
-    await writeText(targetPath, marked);
+    await ensureDir(dirname(targetPath));
+    await writeText(targetPath, content);
   }
 
   async installSkill(): Promise<void> {
-    const markers = getToolMarkers(this.scope);
-    const geminiMdPath = join(markers.gemini, 'GEMINI.md');
+    // Create the skills/ directory (Gemini CLI's native skill location) and
+    // write a WaslaGenie skill file so Gemini knows how to run sync commands.
+    // We do NOT touch GEMINI.md — that file belongs to the user.
+    const skillDir = join(this.paths.skill!!, 'waslagenie');
+    await ensureDir(skillDir);
 
-    let content = '';
-    if (await fileExists(geminiMdPath)) {
-      content = await readText(geminiMdPath);
+    const skillPath = join(skillDir, 'SKILL.md');
+    if (await fileExists(skillPath)) {
+      return; // already installed, idempotent
     }
 
-    const waslagenieBlock = `
-<!-- waslagenie:start -->
-## WaslaGenie
+    const skillContent = `---
+name: waslagenie
+description: >
+  Runs WaslaGenie CLI commands to sync, inspect, or manage agents and MCPs
+  across AI orchestrators. Use when asked to sync tools, check sync status,
+  install WaslaGenie, or troubleshoot why an agent isn't appearing in a tool.
+---
 
-WaslaGenie synchronizes your agents and MCPs across Claude Code, Gemini CLI, and OpenClaw.
+# WaslaGenie Operator
 
-To use WaslaGenie:
+Use the \`waslagenie\` CLI to sync agents and MCPs across all installed AI tools.
+
 \`\`\`bash
-waslagenie sync          # Sync agents across tools
-waslagenie status        # View all synced assets
-waslagenie watch         # Watch for changes and auto-sync
+waslagenie sync     # Mirror agents across all tools
+waslagenie status   # Show registry state
+waslagenie watch    # Auto-sync on file changes
 \`\`\`
-
-For more info: [WaslaGenie Documentation](https://github.com/yourusername/wasla-genie)
-<!-- waslagenie:end -->
 `;
 
-    if (!content.includes('<!-- waslagenie:start -->')) {
-      await writeText(geminiMdPath, content + waslagenieBlock);
-    }
+    await writeText(skillPath, skillContent);
   }
 
   getRootConfigAppend(): string | null {
-    return `
-<!-- waslagenie:start -->
-## WaslaGenie
-
-WaslaGenie synchronizes your agents and MCPs across Claude Code, Gemini CLI, and OpenClaw.
-
-To use WaslaGenie:
-\`\`\`bash
-waslagenie sync          # Sync agents across tools
-waslagenie status        # View all synced assets
-waslagenie watch         # Watch for changes and auto-sync
-\`\`\`
-
-For more info: [WaslaGenie Documentation](https://github.com/yourusername/wasla-genie)
-<!-- waslagenie:end -->
-`;
+    return null;
   }
 }

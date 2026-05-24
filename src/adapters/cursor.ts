@@ -1,7 +1,7 @@
 import { BaseAdapter } from './base.js';
 import { Asset } from '../core/types.js';
 import { fileExists, writeText, ensureDir } from '../utils/fs.js';
-import { join } from 'path';
+import { dirname, join } from 'path';
 import { getToolMarkers } from '../utils/paths.js';
 
 export class CursorAdapter extends BaseAdapter {
@@ -18,21 +18,25 @@ export class CursorAdapter extends BaseAdapter {
     const markers = getToolMarkers(this.scope);
     const base = markers['cursor'];
     return {
-      agents: join(base, 'rules'),
-      mcp: join(base, 'mcp'),
+      agent: join(base, 'agents'),
+      skill: join(base, 'skills'),
+      mcp: join(base, 'mcp.json'),
+      context: this.scope === 'workspace' ? join(dirname(base), 'AGENTS.md') : undefined,
     };
   }
 
   mcpKey = 'mcpServers';
-  contextFile = '.cursorrules';
+  contextFile = 'AGENTS.md';
 
   get skillDirs() {
-    return [this.paths.agents];
+    return [this.paths.skill!];
   }
 
   formats = {
-    agents: 'md' as const,
+    agent: 'md' as const,
+    skill: 'md' as const,
     mcp: 'json' as const,
+    context: 'md' as const,
   };
 
   async isInstalled(): Promise<boolean> {
@@ -49,15 +53,13 @@ export class CursorAdapter extends BaseAdapter {
   }
 
   private async writeAgentStub(targetPath: string, content: string): Promise<void> {
-    await ensureDir(this.paths.agents);
-    const marked = `<!-- waslagenie-stub -->\n${content}`;
-    await writeText(targetPath, marked);
+    await ensureDir(dirname(targetPath));
+    await writeText(targetPath, content);
   }
 
   private async writeMcpStub(targetPath: string, content: string): Promise<void> {
-    await ensureDir(this.paths.mcp);
-    const marked = `/* waslagenie-stub */\n${content}`;
-    await writeText(targetPath, marked);
+    await ensureDir(dirname(targetPath));
+    await writeText(targetPath, content);
   }
 
   async installSkill(): Promise<void> {

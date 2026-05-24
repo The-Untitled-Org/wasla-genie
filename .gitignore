@@ -29,18 +29,29 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# WaslGenie working directories (local agent/mcp syncing)
-.waslgenie/
-.claude/agents/
-.claude/mcp/
-.gemini/agents/
-.gemini/mcp/
-.config/opencode/
-
-# Keep legitimate project skills/configs - don't ignore:
-# .gemini/skills/ - these are part of the project
-# .claude/CLAUDE.md - documentation for Claude
-# .gemini/GEMINI.md - documentation for Gemini
+# WaslaGenie provider output (local AI configuration, never commit)
+/.waslgenie/
+/.waslagenie/
+/.claude/
+/.gemini/
+/.openclaw/
+/.opencode/
+/.cursor/
+/.github/copilot-instructions.md
+/.github/agents/
+/.github/instructions/
+/.github/skills/
+/.mcp.json
+/.vscode/mcp.json
+/.opencode.json
+/opencode.json
+/opencode.jsonc
+/.cursorrules
+/CLAUDE.md
+/GEMINI.md
+/AGENTS.md
+/opencode.md
+/skills/
 
 # Testing
 output/
@@ -50,7 +61,3 @@ coverage/
 # Temporary
 tmp/
 temp/
-
-
-.waslagenie
-output/

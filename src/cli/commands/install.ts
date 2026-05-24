@@ -1,52 +1,29 @@
-import { getInstalledAdapters } from '../../adapters/factory.js';
-import { section, success, error, warning, highlight, spacer } from '../../utils/cli-output.js';
+import { section, success, error, highlight, spacer } from '../../utils/cli-output.js';
 import { getRegistryDir } from '../../utils/paths.js';
 import { ensureDir } from '../../utils/fs.js';
 
 export async function installCommand(): Promise<void> {
   try {
-    section('Detecting installed orchestrators...');
-    spacer();
-
-    const adapters = await getInstalledAdapters();
-
-    if (adapters.length === 0) {
-      error('No supported orchestrators found');
-      warning('Please install Claude Code, Gemini CLI, or OpenCode first');
-      process.exit(1);
-    }
-
-    adapters.forEach((adapter) => {
-      success(`${adapter.displayName} found`);
-    });
-
-    spacer();
-    section('Installing WaslaGenie...');
+    section('Preparing WaslaGenie CLI...');
     spacer();
 
     // Ensure registry directory exists
     await ensureDir(getRegistryDir('user'));
 
-    // Install skill in each adapter
-    for (const adapter of adapters) {
-      try {
-        await adapter.installSkill();
-        success(`Registered in ${adapter.displayName}`);
-      } catch (e) {
-        error(`Failed to register in ${adapter.displayName}: ${e}`);
-      }
-    }
+    success('Registry directory ready');
 
     spacer();
-    highlight('Installation complete!');
+    highlight('CLI setup complete!');
     console.log('');
-    console.log('Next steps:');
-    console.log('  1. Create agents in your preferred tool');
-    console.log('  2. Run: waslagenie sync');
-    console.log('  3. Run: waslagenie watch (for auto-sync)');
+    console.log('This command does not write skills into Claude, Gemini, or other tools.');
+    console.log('');
+    console.log('Common commands:');
+    console.log('  waslagenie sync');
+    console.log('  waslagenie sync-to --from gemini --to claude');
+    console.log('  waslagenie register  # optional: add WaslaGenie helper skills to tools');
     console.log('');
   } catch (err) {
-    error(`Installation failed: ${err}`);
+    error(`CLI setup failed: ${err}`);
     process.exit(1);
   }
 }

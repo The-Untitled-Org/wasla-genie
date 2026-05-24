@@ -121,17 +121,25 @@ The same pattern applies across every asset type:
 WaslaGenie is cross-platform via `npx` — no global install required:
 
 ```bash
-npx wasla-genie install
+npx wasla-genie sync
 ```
 
-This detects every supported orchestrator on your machine and registers WaslaGenie as a native skill inside each one.
+This runs the CLI directly. It does not register helper skills inside Claude, Gemini, or other tools.
 
 **Or install globally:**
 
 ```bash
 npm install -g wasla-genie
-waslagenie install
+waslagenie sync
 ```
+
+Optional helper registration:
+
+```bash
+waslagenie register
+```
+
+`register` detects supported orchestrators and adds the WaslaGenie helper skill inside each one.
 
 ---
 

@@ -1,4 +1,4 @@
-import { readdir, readFile, writeFile, stat, mkdir } from 'fs/promises';
+import { readdir, readFile, writeFile, stat, mkdir, rm } from 'fs/promises';
 
 export async function fileExists(path: string): Promise<boolean> {
   try {
@@ -38,6 +38,10 @@ export async function writeText(path: string, content: string): Promise<void> {
 
 export async function ensureDir(path: string): Promise<void> {
   await mkdir(path, { recursive: true });
+}
+
+export async function removePath(path: string): Promise<void> {
+  await rm(path, { recursive: true, force: true });
 }
 
 export async function listFiles(dir: string, extension?: string): Promise<string[]> {

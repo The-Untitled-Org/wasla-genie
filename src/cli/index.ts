@@ -2,7 +2,9 @@
 
 import { Command } from 'commander';
 import { installCommand } from './commands/install.js';
+import { registerCommand } from './commands/register.js';
 import { syncCommand } from './commands/sync.js';
+import { syncToCommand } from './commands/sync-to.js';
 import { statusCommand } from './commands/status.js';
 import { configCommand } from './commands/config.js';
 import { watchCommand } from './commands/watch.js';
@@ -15,7 +17,13 @@ program
   .version('0.1.0');
 
 program.addCommand(
-  new Command('install').description('Detect tools and register WaslaGenie').action(installCommand)
+  new Command('install').description('Prepare WaslaGenie CLI state').action(installCommand)
+);
+
+program.addCommand(
+  new Command('register')
+    .description('Register WaslaGenie helper skills inside installed AI tools')
+    .action(registerCommand)
 );
 
 program.addCommand(
@@ -23,6 +31,15 @@ program.addCommand(
     .option('--scope <scope>', 'user or workspace', 'workspace')
     .description('Scan and sync agents/MCPs across tools')
     .action((options) => syncCommand(options))
+);
+
+program.addCommand(
+  new Command('sync-to')
+    .option('--from <source>', 'Source tool (gemini, claude, etc.)')
+    .option('--to <targets>', 'Target tool(s), comma-separated')
+    .option('--scope <scope>', 'user or workspace', 'workspace')
+    .description('Sync agents/MCPs from one tool to specific target(s)')
+    .action((options) => syncToCommand(options))
 );
 
 program.addCommand(

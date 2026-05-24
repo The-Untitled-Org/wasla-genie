@@ -1,7 +1,7 @@
 import { BaseAdapter } from './base.js';
 import { Asset } from '../core/types.js';
 import { fileExists, writeText, ensureDir } from '../utils/fs.js';
-import { join } from 'path';
+import { dirname, join } from 'path';
 import { getToolMarkers } from '../utils/paths.js';
 
 export class OpenclawAdapter extends BaseAdapter {
@@ -16,9 +16,15 @@ export class OpenclawAdapter extends BaseAdapter {
 
   get paths() {
     const markers = getToolMarkers(this.scope);
+    const workspaceRoot =
+      this.scope === 'workspace' ? dirname(markers.openclaw) : join(markers.openclaw, 'workspace');
     return {
-      agents: join(markers.openclaw, 'agents'),
-      mcp: join(markers.openclaw, 'mcp'),
+      skill:
+        this.scope === 'workspace'
+          ? join(workspaceRoot, 'skills')
+          : join(markers.openclaw, 'skills'),
+      mcp: this.scope === 'user' ? join(markers.openclaw, 'openclaw.json') : undefined,
+      context: join(workspaceRoot, 'AGENTS.md'),
     };
   }
 
@@ -26,17 +32,20 @@ export class OpenclawAdapter extends BaseAdapter {
   contextFile = 'AGENTS.md';
 
   formats = {
-    agents: 'md' as const,
+    skill: 'md' as const,
     mcp: 'json' as const,
+    context: 'md' as const,
   };
 
   get skillDirs() {
-    return [this.paths.agents];
+    return [this.paths.skill!];
   }
 
   async isInstalled(): Promise<boolean> {
-    const markers = getToolMarkers(this.scope);
-    return fileExists(markers.openclaw);
+    if (this.scope === 'user') {
+      return fileExists(getToolMarkers(this.scope).openclaw);
+    }
+    return (await fileExists(this.paths.context!)) || (await fileExists(this.paths.skill!));
   }
 
   async writeStub(asset: Asset, content: string, targetPath: string): Promise<void> {
@@ -48,15 +57,13 @@ export class OpenclawAdapter extends BaseAdapter {
   }
 
   private async writeAgentStub(targetPath: string, content: string): Promise<void> {
-    await ensureDir(this.paths.agents);
-    const marked = `<!-- waslagenie-stub -->\n${content}`;
-    await writeText(targetPath, marked);
+    await ensureDir(dirname(targetPath));
+    await writeText(targetPath, content);
   }
 
   private async writeMcpStub(targetPath: string, content: string): Promise<void> {
-    await ensureDir(this.paths.mcp);
-    const marked = `/* waslagenie-stub */\n${content}`;
-    await writeText(targetPath, marked);
+    await ensureDir(dirname(targetPath));
+    await writeText(targetPath, content);
   }
 
   async installSkill(): Promise<void> {

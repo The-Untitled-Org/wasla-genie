@@ -19,9 +19,8 @@ import { GeminiAdapter } from '@adapters/gemini';
 import { OpenclawAdapter } from '@adapters/openclaw';
 import { OpenCodeAdapter } from '@adapters/opencode';
 import { CursorAdapter } from '@adapters/cursor';
-import { VscodeAdapter } from '@adapters/vscode';
 import { GithubCopilotAdapter } from '@adapters/github-copilot';
-import { GithubCliAdapter } from '@adapters/github-cli';
+import { GithubCopilotCliAdapter } from '@adapters/github-copilot-cli';
 import { writeText, ensureDir, readText, fileExists } from '@utils/fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -81,9 +80,9 @@ describe('getAdapter', () => {
 // ─── Factory: getAllAdapters ──────────────────────────────────────────────────
 
 describe('getAllAdapters', () => {
-  it('returns exactly 8 adapters', () => {
+  it('returns exactly 7 adapters', () => {
     const adapters = getAllAdapters('workspace');
-    expect(adapters).toHaveLength(8);
+    expect(adapters).toHaveLength(7);
   });
 
   it('contains all three MVP tool names', () => {
@@ -117,9 +116,8 @@ describe.each([
   ['claude', ClaudeAdapter, 'Claude Code', 'md', 'json', 'mcpServers', 'CLAUDE.md'],
   ['gemini', GeminiAdapter, 'Gemini CLI', 'md', 'json', 'mcpServers', 'GEMINI.md'],
   ['openclaw', OpenclawAdapter, 'OpenClaw', 'md', 'json', 'mcp.servers', 'AGENTS.md'],
-  ['opencode', OpenCodeAdapter, 'OpenCode', 'json', 'json', 'mcpServers', 'opencode.md'],
-  ['cursor', CursorAdapter, 'Cursor', 'md', 'json', 'mcpServers', '.cursorrules'],
-  ['vscode', VscodeAdapter, 'VS Code', 'md', 'json', 'servers', '.github/copilot-instructions.md'],
+  ['opencode', OpenCodeAdapter, 'OpenCode', 'md', 'json', 'mcp', 'AGENTS.md'],
+  ['cursor', CursorAdapter, 'Cursor', 'md', 'json', 'mcpServers', 'AGENTS.md'],
   [
     'github-copilot',
     GithubCopilotAdapter,
@@ -130,9 +128,9 @@ describe.each([
     '.github/copilot-instructions.md',
   ],
   [
-    'github-cli',
-    GithubCliAdapter,
-    'GitHub CLI',
+    'github-copilot-cli',
+    GithubCopilotCliAdapter,
+    'GitHub Copilot CLI',
     'md',
     'json',
     'mcpServers',
@@ -140,7 +138,7 @@ describe.each([
   ],
 ] as const)(
   '%s adapter — interface contract',
-  (toolName, AdapterClass, displayName, agentFmt, mcpFmt, mcpKey, contextFile) => {
+  (toolName, AdapterClass, displayName, _agentFmt, mcpFmt, mcpKey, contextFile) => {
     let adapter: InstanceType<typeof AdapterClass>;
 
     beforeEach(() => {
@@ -155,18 +153,19 @@ describe.each([
       expect(adapter.displayName).toBe(displayName);
     });
 
-    it('has paths.agents string', () => {
-      expect(typeof adapter.paths.agents).toBe('string');
-      expect(adapter.paths.agents.length).toBeGreaterThan(0);
+    it('has paths.skill string', () => {
+      expect(typeof adapter.paths.skill).toBe('string');
+      expect(adapter.paths.skill.length).toBeGreaterThan(0);
     });
 
-    it('has paths.mcp string', () => {
-      expect(typeof adapter.paths.mcp).toBe('string');
-      expect(adapter.paths.mcp.length).toBeGreaterThan(0);
+    it('has an MCP path where workspace MCP is supported', () => {
+      if (adapter.paths.mcp) {
+        expect(adapter.paths.mcp.length).toBeGreaterThan(0);
+      }
     });
 
-    it(`agents format is "${agentFmt}"`, () => {
-      expect(adapter.formats.agents).toBe(agentFmt);
+    it('has a supported skills format', () => {
+      expect(['md', 'mdc', 'agent.md', 'instructions.md']).toContain(adapter.formats.skill);
     });
 
     it(`mcp format is "${mcpFmt}"`, () => {
@@ -196,7 +195,27 @@ describe.each([
   }
 );
 
-// ─── writeStub — agent type ───────────────────────────────────────────────────
+describe.each([
+  ['github-copilot', GithubCopilotAdapter],
+  ['github-copilot-cli', GithubCopilotCliAdapter],
+] as const)('%s adapter - Copilot Agent Skills', (_toolName, AdapterClass) => {
+  it('uses native .github/skills directories with SKILL.md content', () => {
+    const adapter = new AdapterClass('workspace');
+
+    expect(adapter.paths.skill).toMatch(/\.github\/skills$/);
+    expect(adapter.formats.skill).toBe('md');
+    expect(adapter.skillDirs).toEqual([adapter.paths.skill]);
+  });
+});
+
+describe('Copilot host MCP locations', () => {
+  it('uses VS Code MCP config for GitHub Copilot and .mcp.json for Copilot CLI', () => {
+    expect(new GithubCopilotAdapter('workspace').paths.mcp).toMatch(/\.vscode\/mcp\.json$/);
+    expect(new GithubCopilotCliAdapter('workspace').paths.mcp).toMatch(/\.mcp\.json$/);
+  });
+});
+
+// ─── writeStub — skill type ───────────────────────────────────────────────────
 
 describe.each([
   ['claude', ClaudeAdapter],
@@ -204,10 +223,9 @@ describe.each([
   ['openclaw', OpenclawAdapter],
   ['opencode', OpenCodeAdapter],
   ['cursor', CursorAdapter],
-  ['vscode', VscodeAdapter],
   ['github-copilot', GithubCopilotAdapter],
-  ['github-cli', GithubCliAdapter],
-] as const)('%s adapter — writeStub (agent)', (toolName, AdapterClass) => {
+  ['github-copilot-cli', GithubCopilotCliAdapter],
+] as const)('%s adapter — writeStub (skill)', (toolName, AdapterClass) => {
   let tmpBase: string;
   let adapter: InstanceType<typeof AdapterClass>;
 
@@ -218,7 +236,8 @@ describe.each([
     // Override paths to point to tmpBase so we don't pollute the real FS
     Object.defineProperty(adapter, 'paths', {
       get: () => ({
-        agents: join(tmpBase, 'agents'),
+        agent: join(tmpBase, 'agents'),
+        skill: join(tmpBase, 'skills'),
         mcp: join(tmpBase, 'mcp'),
       }),
     });
@@ -228,31 +247,28 @@ describe.each([
     await rm(tmpBase, { recursive: true, force: true });
   });
 
-  it('creates the agent stub file', async () => {
-    const asset = makeAsset({ type: 'agent' });
-    const targetPath = join(tmpBase, 'agents', 'researcher.md');
-    await ensureDir(join(tmpBase, 'agents'));
+  it('creates the mirrored skill file', async () => {
+    const asset = makeAsset({ type: 'skill' });
+    const targetPath = join(tmpBase, 'skills', 'researcher', 'SKILL.md');
 
     await adapter.writeStub(asset, 'You are a researcher.', targetPath);
 
     expect(await fileExists(targetPath)).toBe(true);
   });
 
-  it('stub file contains waslagenie marker for agents', async () => {
-    const asset = makeAsset({ type: 'agent' });
-    const targetPath = join(tmpBase, 'agents', 'researcher.md');
-    await ensureDir(join(tmpBase, 'agents'));
+  it('mirrors skill content without injecting markers', async () => {
+    const asset = makeAsset({ type: 'skill' });
+    const targetPath = join(tmpBase, 'skills', 'researcher', 'SKILL.md');
 
     await adapter.writeStub(asset, 'You are a researcher.', targetPath);
 
     const content = await readText(targetPath);
-    expect(content.includes('waslagenie-stub') || content.includes('waslagenie')).toBe(true);
+    expect(content).toBe('You are a researcher.');
   });
 
-  it('stub file contains the original content', async () => {
-    const asset = makeAsset({ type: 'agent' });
-    const targetPath = join(tmpBase, 'agents', 'researcher.md');
-    await ensureDir(join(tmpBase, 'agents'));
+  it('mirrored skill contains the original content', async () => {
+    const asset = makeAsset({ type: 'skill' });
+    const targetPath = join(tmpBase, 'skills', 'researcher', 'SKILL.md');
 
     const originalContent = 'You are a research specialist.';
     await adapter.writeStub(asset, originalContent, targetPath);
@@ -270,9 +286,8 @@ describe.each([
   ['openclaw', OpenclawAdapter],
   ['opencode', OpenCodeAdapter],
   ['cursor', CursorAdapter],
-  ['vscode', VscodeAdapter],
   ['github-copilot', GithubCopilotAdapter],
-  ['github-cli', GithubCliAdapter],
+  ['github-copilot-cli', GithubCopilotCliAdapter],
 ] as const)('%s adapter — writeStub (mcp)', (toolName, AdapterClass) => {
   let tmpBase: string;
   let adapter: InstanceType<typeof AdapterClass>;
@@ -283,7 +298,8 @@ describe.each([
 
     Object.defineProperty(adapter, 'paths', {
       get: () => ({
-        agents: join(tmpBase, 'agents'),
+        agent: join(tmpBase, 'agents'),
+        skill: join(tmpBase, 'skills'),
         mcp: join(tmpBase, 'mcp'),
       }),
     });
@@ -303,7 +319,7 @@ describe.each([
     expect(await fileExists(targetPath)).toBe(true);
   });
 
-  it('MCP stub contains waslagenie marker', async () => {
+  it('MCP mirror preserves content without injecting markers', async () => {
     const asset = makeAsset({ type: 'mcp', name: 'notion' });
     const targetPath = join(tmpBase, 'mcp', 'notion.json');
     await ensureDir(join(tmpBase, 'mcp'));
@@ -311,7 +327,7 @@ describe.each([
     await adapter.writeStub(asset, '{}', targetPath);
 
     const content = await readText(targetPath);
-    expect(content.includes('waslagenie-stub') || content.includes('waslagenie')).toBe(true);
+    expect(content).toBe('{}');
   });
 });
 
@@ -351,40 +367,16 @@ describe.each([
 // ─── getRootConfigAppend ──────────────────────────────────────────────────────
 
 describe('ClaudeAdapter.getRootConfigAppend', () => {
-  it('returns a non-null string', () => {
+  it('returns null — Claude context file is not polluted by WaslaGenie', () => {
     const adapter = new ClaudeAdapter('workspace');
-    const block = adapter.getRootConfigAppend();
-    expect(typeof block).toBe('string');
-    expect((block as string).length).toBeGreaterThan(0);
-  });
-
-  it('contains waslagenie:start and waslagenie:end markers', () => {
-    const adapter = new ClaudeAdapter('workspace');
-    const block = adapter.getRootConfigAppend()!;
-    expect(block).toContain('<!-- waslagenie:start -->');
-    expect(block).toContain('<!-- waslagenie:end -->');
-  });
-
-  it('contains sync command reference', () => {
-    const adapter = new ClaudeAdapter('workspace');
-    const block = adapter.getRootConfigAppend()!;
-    expect(block).toContain('waslagenie sync');
+    expect(adapter.getRootConfigAppend()).toBeNull();
   });
 });
 
 describe('GeminiAdapter.getRootConfigAppend', () => {
-  it('returns a non-null string', () => {
+  it('returns null — Gemini context file is not polluted by WaslaGenie', () => {
     const adapter = new GeminiAdapter('workspace');
-    const block = adapter.getRootConfigAppend();
-    expect(typeof block).toBe('string');
-    expect((block as string).length).toBeGreaterThan(0);
-  });
-
-  it('contains waslagenie:start and waslagenie:end markers', () => {
-    const adapter = new GeminiAdapter('workspace');
-    const block = adapter.getRootConfigAppend()!;
-    expect(block).toContain('<!-- waslagenie:start -->');
-    expect(block).toContain('<!-- waslagenie:end -->');
+    expect(adapter.getRootConfigAppend()).toBeNull();
   });
 });
 
@@ -401,19 +393,19 @@ describe('Adapter scope — user vs workspace paths', () => {
   it('Claude workspace paths differ from user paths', () => {
     const ws = new ClaudeAdapter('workspace');
     const user = new ClaudeAdapter('user');
-    expect(ws.paths.agents).not.toBe(user.paths.agents);
+    expect(ws.paths.skill).not.toBe(user.paths.skill);
   });
 
   it('Gemini workspace paths differ from user paths', () => {
     const ws = new GeminiAdapter('workspace');
     const user = new GeminiAdapter('user');
-    expect(ws.paths.agents).not.toBe(user.paths.agents);
+    expect(ws.paths.skill).not.toBe(user.paths.skill);
   });
 
   it('OpenClaw workspace paths differ from user paths', () => {
     const ws = new OpenclawAdapter('workspace');
     const user = new OpenclawAdapter('user');
-    expect(ws.paths.agents).not.toBe(user.paths.agents);
+    expect(ws.paths.skill).not.toBe(user.paths.skill);
   });
 });
 // ─── installSkill (idempotency & correctness) ──────────────────────────────────
@@ -427,7 +419,7 @@ describe('ClaudeAdapter.installSkill', () => {
     await rm(tmpBase, { recursive: true, force: true });
   });
 
-  it('creates CLAUDE.md if not exists and adds block', async () => {
+  it('creates skills/waslagenie/SKILL.md skill file', async () => {
     const { vi } = await import('vitest');
     const pathUtils = await import('@utils/paths');
     vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
@@ -440,16 +432,16 @@ describe('ClaudeAdapter.installSkill', () => {
     const adapter = new ClaudeAdapter('workspace');
     await adapter.installSkill();
 
-    const claudeMdPath = join(tmpBase, 'CLAUDE.md');
-    expect(await fileExists(claudeMdPath)).toBe(true);
-    const content = await readText(claudeMdPath);
-    expect(content).toContain('## WaslaGenie');
-    expect(content).toContain('<!-- waslagenie:start -->');
+    const skillPath = join(tmpBase, 'skills', 'waslagenie', 'SKILL.md');
+    expect(await fileExists(skillPath)).toBe(true);
+    const content = await readText(skillPath);
+    expect(content).toContain('waslagenie');
+    expect(content).toContain('sync');
 
     vi.restoreAllMocks();
   });
 
-  it('does not double-add if block exists', async () => {
+  it('is idempotent — calling twice does not duplicate skill file', async () => {
     const { vi } = await import('vitest');
     const pathUtils = await import('@utils/paths');
     vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
@@ -460,14 +452,35 @@ describe('ClaudeAdapter.installSkill', () => {
     });
 
     const adapter = new ClaudeAdapter('workspace');
-    const claudeMdPath = join(tmpBase, 'CLAUDE.md');
-    const original =
-      'Existing content\n<!-- waslagenie:start -->\n## WaslaGenie\n<!-- waslagenie:end -->\nFooter';
-    await writeText(claudeMdPath, original);
-
     await adapter.installSkill();
-    const updated = await readText(claudeMdPath);
-    expect(updated).toBe(original); // Should not change
+    await adapter.installSkill(); // second call must not throw or create duplicates
+
+    const skillPath = join(tmpBase, 'skills', 'waslagenie', 'SKILL.md');
+    expect(await fileExists(skillPath)).toBe(true);
+
+    vi.restoreAllMocks();
+  });
+
+  it('does NOT touch CLAUDE.md', async () => {
+    const { vi } = await import('vitest');
+    const pathUtils = await import('@utils/paths');
+    vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
+      claude: tmpBase,
+      gemini: '',
+      openclaw: '',
+      codex: '',
+    });
+
+    const claudeMdPath = join(tmpBase, 'CLAUDE.md');
+    const originalContent = 'My project context — do not modify.';
+    await writeText(claudeMdPath, originalContent);
+
+    const adapter = new ClaudeAdapter('workspace');
+    await adapter.installSkill();
+
+    // CLAUDE.md must be left exactly as-is
+    const afterContent = await readText(claudeMdPath);
+    expect(afterContent).toBe(originalContent);
 
     vi.restoreAllMocks();
   });
@@ -482,7 +495,7 @@ describe('GeminiAdapter.installSkill', () => {
     await rm(tmpBase, { recursive: true, force: true });
   });
 
-  it('appends to GEMINI.md if it exists', async () => {
+  it('creates skills/waslagenie/SKILL.md in the Gemini skills directory', async () => {
     const { vi } = await import('vitest');
     const pathUtils = await import('@utils/paths');
     vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
@@ -493,13 +506,37 @@ describe('GeminiAdapter.installSkill', () => {
     });
 
     const adapter = new GeminiAdapter('workspace');
-    const geminiMdPath = join(tmpBase, 'GEMINI.md');
-    await writeText(geminiMdPath, 'Existing content');
-
     await adapter.installSkill();
-    const content = await readText(geminiMdPath);
-    expect(content).toContain('Existing content');
-    expect(content).toContain('## WaslaGenie');
+
+    const skillPath = join(tmpBase, 'skills', 'waslagenie', 'SKILL.md');
+    expect(await fileExists(skillPath)).toBe(true);
+    const content = await readText(skillPath);
+    expect(content).toContain('waslagenie');
+    expect(content).toContain('sync');
+
+    vi.restoreAllMocks();
+  });
+
+  it('does NOT touch GEMINI.md', async () => {
+    const { vi } = await import('vitest');
+    const pathUtils = await import('@utils/paths');
+    vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
+      claude: '',
+      gemini: tmpBase,
+      openclaw: '',
+      codex: '',
+    });
+
+    const geminiMdPath = join(tmpBase, 'GEMINI.md');
+    const originalContent = 'Existing content';
+    await writeText(geminiMdPath, originalContent);
+
+    const adapter = new GeminiAdapter('workspace');
+    await adapter.installSkill();
+
+    // GEMINI.md must be left exactly as-is
+    const afterContent = await readText(geminiMdPath);
+    expect(afterContent).toBe(originalContent);
 
     vi.restoreAllMocks();
   });

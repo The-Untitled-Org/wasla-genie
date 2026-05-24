@@ -2,7 +2,7 @@ import chokidar from 'chokidar';
 import { RegistryManager } from '../../core/registry.js';
 import { Scanner } from '../../core/scanner.js';
 import { Syncer } from '../../syncer/index.js';
-import { getToolMarkers } from '../../utils/paths.js';
+import { getAllAdapters } from '../../adapters/factory.js';
 import { section, success, error, info, spacer } from '../../utils/cli-output.js';
 
 interface WatchOptions {
@@ -22,16 +22,26 @@ export async function watchCommand(options: WatchOptions): Promise<void> {
     const scanner = new Scanner(scope);
     const syncer = new Syncer(registry, scanner, scope);
 
-    // Get tool directories to watch
-    const markers = getToolMarkers(scope);
-    const watchDirs = Object.values(markers).map((path) => `${path}/agents`) as string[];
+    const watchDirs = [
+      ...new Set(
+        getAllAdapters(scope).flatMap((adapter) =>
+          Object.values(adapter.paths).filter((path): path is string => Boolean(path))
+        )
+      ),
+    ];
 
     info(`Watching: ${watchDirs.join(', ')}`);
     spacer();
 
     // Create watcher
     const watcher = chokidar.watch(watchDirs, {
-      ignored: /(^|[\/\\])\.|node_modules/,
+      ignored: [
+        /(^|[\/\\])node_modules([\/\\]|$)/,
+        /(^|[\/\\])\.git([\/\\]|$)/,
+        /(^|[\/\\])\.waslagenie([\/\\]|$)/,
+        /(^|[\/\\])dist([\/\\]|$)/,
+        /(^|[\/\\])output([\/\\]|$)/,
+      ],
       persistent: true,
       awaitWriteFinish: {
         stabilityThreshold: 1000,
@@ -40,15 +50,24 @@ export async function watchCommand(options: WatchOptions): Promise<void> {
     });
 
     let isRunningSync = false;
+    let pendingSync = false;
 
     const performSync = async () => {
-      if (isRunningSync) return;
+      if (isRunningSync) {
+        pendingSync = true;
+        return;
+      }
 
       isRunningSync = true;
       try {
-        const result = await syncer.sync(false);
-        const now = new Date().toLocaleTimeString();
-        console.log(`[${now}] ✔ Synced: ${result.stubsWritten} stubs written`);
+        do {
+          pendingSync = false;
+          const result = await syncer.sync(false);
+          const now = new Date().toLocaleTimeString();
+          console.log(
+            `[${now}] Synced: ${result.stubsWritten} written, ${result.stubsDeleted} deleted`
+          );
+        } while (pendingSync);
       } catch (err) {
         error(`Sync failed: ${err}`);
       } finally {

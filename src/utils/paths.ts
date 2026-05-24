@@ -33,24 +33,22 @@ export function getToolMarkers(scope: 'user' | 'workspace' = 'user'): Record<str
     return {
       claude: resolve('.claude'),
       gemini: resolve('.gemini'),
-      openclaw: resolve('.config/openclaw'),
+      openclaw: resolve('.openclaw'),
       opencode: resolve('.opencode'),
       cursor: resolve('.cursor'),
-      vscode: resolve('.vscode'),
-      'github-copilot': resolve('.github'),
-      'github-cli': resolve('.github'),
+      'github-copilot': resolve('.vscode'),
+      'github-copilot-cli': resolve('.github'),
     };
   }
 
   return {
     claude: expandTilde('~/.claude'),
     gemini: expandTilde('~/.gemini'),
-    openclaw: expandTilde('~/.config/openclaw'),
-    opencode: expandTilde('~/.opencode'),
+    openclaw: expandTilde('~/.openclaw'),
+    opencode: expandTilde('~/.config/opencode'),
     cursor: expandTilde('~/.cursor'),
-    vscode: expandTilde('~/.config/Code/User'),
-    'github-copilot': expandTilde('~/.github'),
-    'github-cli': expandTilde('~/.copilot'),
+    'github-copilot': expandTilde('~/.config/Code/User'),
+    'github-copilot-cli': expandTilde('~/.copilot'),
   };
 }
 
@@ -76,9 +74,8 @@ export function getToolDisplayName(toolName: string): string {
     openclaw: 'OpenClaw',
     opencode: 'OpenCode',
     cursor: 'Cursor',
-    vscode: 'VS Code',
     'github-copilot': 'GitHub Copilot',
-    'github-cli': 'GitHub CLI',
+    'github-copilot-cli': 'GitHub Copilot CLI',
   };
   return displayNames[toolName] || toolName;
 }

@@ -15,7 +15,7 @@
  *  ✅ Non-goals: no origin_tool in registry
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Syncer } from '@syncer/index';
 import { RegistryManager } from '@core/registry';
 import { Scanner } from '@core/scanner';
@@ -25,15 +25,57 @@ import { GeminiAdapter } from '@adapters/gemini';
 import { OpenclawAdapter } from '@adapters/openclaw';
 import { OpenCodeAdapter } from '@adapters/opencode';
 import { CursorAdapter } from '@adapters/cursor';
-import { VscodeAdapter } from '@adapters/vscode';
 import { GithubCopilotAdapter } from '@adapters/github-copilot';
-import { GithubCliAdapter } from '@adapters/github-cli';
+import { GithubCopilotCliAdapter } from '@adapters/github-copilot-cli';
 import type { DiscoveredFile } from '@core/types';
+import { createHash } from 'crypto';
+import * as pathUtils from '@utils/paths';
+import { join } from 'path';
+import { tmpdir } from 'os';
+import { mkdtemp, rm } from 'fs/promises';
 
-// ─── Success Criteria: stub markers present ────────────────────────────────
+let isolatedWorkspace: string;
 
-describe('MVP Success Criteria — stub markers present after sync', () => {
-  it('validates stubs contain waslagenie marker', async () => {
+beforeEach(async () => {
+  isolatedWorkspace = await mkdtemp(join(tmpdir(), 'waslagenie-e2e-'));
+  vi.spyOn(pathUtils, 'getToolMarkers').mockImplementation((scope) =>
+    scope === 'user'
+      ? {
+          claude: join(isolatedWorkspace, 'user', '.claude'),
+          gemini: join(isolatedWorkspace, 'user', '.gemini'),
+          openclaw: join(isolatedWorkspace, 'user', '.openclaw'),
+          opencode: join(isolatedWorkspace, 'user', '.config', 'opencode'),
+          cursor: join(isolatedWorkspace, 'user', '.cursor'),
+          'github-copilot': join(isolatedWorkspace, 'user', '.config', 'Code', 'User'),
+          'github-copilot-cli': join(isolatedWorkspace, 'user', '.copilot'),
+        }
+      : {
+          claude: join(isolatedWorkspace, '.claude'),
+          gemini: join(isolatedWorkspace, '.gemini'),
+          openclaw: join(isolatedWorkspace, '.openclaw'),
+          opencode: join(isolatedWorkspace, '.opencode'),
+          cursor: join(isolatedWorkspace, '.cursor'),
+          'github-copilot': join(isolatedWorkspace, '.vscode'),
+          'github-copilot-cli': join(isolatedWorkspace, '.github'),
+        }
+  );
+  vi.spyOn(pathUtils, 'getRegistryPath').mockImplementation((scope) =>
+    join(isolatedWorkspace, '.waslagenie', `${scope}-registry.json`)
+  );
+  vi.spyOn(pathUtils, 'getRegistryDir').mockImplementation((scope) =>
+    join(isolatedWorkspace, '.waslagenie', scope)
+  );
+});
+
+afterEach(async () => {
+  vi.restoreAllMocks();
+  await rm(isolatedWorkspace, { recursive: true, force: true });
+});
+
+// ─── Success Criteria: mirrored files present ───────────────────────────────
+
+describe('MVP Success Criteria — mirrored files present after sync', () => {
+  it('validates tracked target files are written', async () => {
     const registry = new RegistryManager('workspace');
     const scanner = new Scanner('workspace');
     const syncer = new Syncer(registry, scanner, 'workspace');
@@ -45,11 +87,7 @@ describe('MVP Success Criteria — stub markers present after sync', () => {
       for (const stub of asset.stubs) {
         if (await fileExists(stub.path)) {
           const content = await readText(stub.path);
-          expect(
-            content.includes('waslagenie-stub') ||
-              content.includes('waslagenie:') ||
-              content.includes('waslagenie')
-          ).toBe(true);
+          expect(createHash('sha256').update(content).digest('hex')).toBe(stub.hash);
         }
       }
     }
@@ -129,31 +167,19 @@ describe('MVP Non-goal — no origin_tool in registry schema', () => {
 // ─── File Modification Rules: waslagenie markers ───────────────────────────
 
 describe('File Modification Rules — waslagenie:start / waslagenie:end markers', () => {
-  it('ClaudeAdapter getRootConfigAppend wraps content in markers', () => {
+  it('ClaudeAdapter getRootConfigAppend returns null \u2014 CLAUDE.md is not modified', () => {
     const adapter = new ClaudeAdapter('workspace');
-    const block = adapter.getRootConfigAppend()!;
-    const start = block.indexOf('<!-- waslagenie:start -->');
-    const end = block.indexOf('<!-- waslagenie:end -->');
-    expect(start).toBeGreaterThanOrEqual(0);
-    expect(end).toBeGreaterThan(start);
+    expect(adapter.getRootConfigAppend()).toBeNull();
   });
 
-  it('GeminiAdapter getRootConfigAppend wraps content in markers', () => {
+  it('GeminiAdapter getRootConfigAppend returns null \u2014 GEMINI.md is not modified', () => {
     const adapter = new GeminiAdapter('workspace');
-    const block = adapter.getRootConfigAppend()!;
-    const start = block.indexOf('<!-- waslagenie:start -->');
-    const end = block.indexOf('<!-- waslagenie:end -->');
-    expect(start).toBeGreaterThanOrEqual(0);
-    expect(end).toBeGreaterThan(start);
+    expect(adapter.getRootConfigAppend()).toBeNull();
   });
 
-  it('markers appear exactly once in getRootConfigAppend output (no duplicates)', () => {
-    const adapter = new ClaudeAdapter('workspace');
-    const block = adapter.getRootConfigAppend()!;
-    const startCount = (block.match(/<!-- waslagenie:start -->/g) || []).length;
-    const endCount = (block.match(/<!-- waslagenie:end -->/g) || []).length;
-    expect(startCount).toBe(1);
-    expect(endCount).toBe(1);
+  it('OpenclawAdapter getRootConfigAppend returns null', () => {
+    const adapter = new OpenclawAdapter('workspace');
+    expect(adapter.getRootConfigAppend()).toBeNull();
   });
 });
 
@@ -283,16 +309,15 @@ describe('Manual sync — repeated invocations', () => {
 
 // ─── Adapter tool coverage: all 3 MVP tools present ──────────────────────
 
-describe('Tool Coverage — all 8 adapters exist and are valid', () => {
+describe('Tool Coverage - all 7 adapters exist and are valid', () => {
   const adapters = [
     new ClaudeAdapter('workspace'),
     new GeminiAdapter('workspace'),
     new OpenclawAdapter('workspace'),
     new OpenCodeAdapter('workspace'),
     new CursorAdapter('workspace'),
-    new VscodeAdapter('workspace'),
     new GithubCopilotAdapter('workspace'),
-    new GithubCliAdapter('workspace'),
+    new GithubCopilotCliAdapter('workspace'),
   ];
 
   adapters.forEach((adapter) => {
@@ -300,16 +325,20 @@ describe('Tool Coverage — all 8 adapters exist and are valid', () => {
       await expect(adapter.isInstalled()).resolves.not.toThrow();
     });
 
-    it(`${adapter.name}: has non-empty agents path`, () => {
-      expect(adapter.paths.agents.length).toBeGreaterThan(0);
+    it(`${adapter.name}: has non-empty skill path`, () => {
+      expect(adapter.paths.skill?.length).toBeGreaterThan(0);
     });
 
     it(`${adapter.name}: has non-empty mcp path`, () => {
-      expect(adapter.paths.mcp.length).toBeGreaterThan(0);
+      if (adapter.paths.mcp) {
+        expect(adapter.paths.mcp.length).toBeGreaterThan(0);
+      }
     });
 
-    it(`${adapter.name}: agents format is md or json`, () => {
-      expect(['md', 'yaml', 'json']).toContain(adapter.formats.agents);
+    it(`${adapter.name}: skill format is supported`, () => {
+      expect(['md', 'yaml', 'json', 'mdc', 'agent.md', 'instructions.md']).toContain(
+        adapter.formats.skill
+      );
     });
 
     it(`${adapter.name}: mcp format is json`, () => {

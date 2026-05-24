@@ -27,9 +27,10 @@ WaslaGenie scans each tool, discovers what you've built, and mirrors the content
 ## Quick Start
 
 ```bash
-npx wasla-genie install      # Detect tools and register WaslaGenie
+npx wasla-genie sync         # Run directly without global install
+npm install -g wasla-genie   # Optional: install the CLI executable
 waslagenie sync              # Scan, discover, and mirror assets
-waslagenie status            # View all synced assets
+waslagenie register          # Optional: add helper skills to AI tools
 ```
 
 ## Key Features

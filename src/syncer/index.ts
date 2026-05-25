@@ -353,6 +353,115 @@ export class Syncer {
     };
   }
 
+  async attachAssetToTool(
+    name: string,
+    type: AssetType,
+    sourceTool: string,
+    targetTool: string
+  ): Promise<boolean> {
+    await this.scanner.initialize();
+    try {
+      this.registry.get();
+    } catch {
+      await this.registry.load();
+    }
+
+    const candidates =
+      sourceTool === 'waslagenie'
+        ? (await this.scanner.scanAllTools([type])).filter((item) => item.name === name)
+        : (await this.scanner.scanTool(sourceTool, [type])).filter((item) => item.name === name);
+    const sourceCandidates = candidates.filter((item) => item.tool !== targetTool);
+    const items = (sourceCandidates.length > 0 ? sourceCandidates : candidates).sort(
+      (a, b) => b.modifiedAt - a.modifiedAt
+    );
+    if (items.length === 0) {
+      throw new Error(`Cannot find ${type}:${name} in ${sourceTool}`);
+    }
+
+    const sourceItems =
+      sourceTool === 'waslagenie' ? items.filter((item) => item.tool === items[0].tool) : items;
+    const sorted = sourceItems.sort((a, b) => b.modifiedAt - a.modifiedAt);
+    const source =
+      type === 'skill'
+        ? sorted.find((item) => item.relativePath.endsWith('/SKILL.md')) || sorted[0]
+        : sorted[0];
+    const content = source.content ?? (await readText(source.path));
+    const contentHash = this.calculateHash(content);
+    let asset = this.registry.findAsset(name, type);
+    if (!asset) {
+      asset = {
+        id: RegistryManager.generateId(),
+        name,
+        type,
+        last_modified_at: source.modifiedAt,
+        last_synced_at: new Date().toISOString(),
+        stubs: [],
+      };
+      this.registry.addAsset(asset);
+    }
+    this.upsertStub(asset, source.tool, source.path, contentHash);
+
+    const adapter = getAdapter(targetTool, this.scope);
+    const formatsRecord = adapter.formats as Record<AssetType, string | undefined>;
+    if (!adapter.paths[type] || !formatsRecord[type]) {
+      throw new Error(`${targetTool} does not support ${type}`);
+    }
+    const filesToMirror = type === 'skill' && formatsRecord.skill === 'md' ? sourceItems : [source];
+    let written = false;
+    let primaryTargetPath: string | undefined;
+    for (const file of filesToMirror) {
+      const targetPath = this.getTargetPath(adapter, type, name, file.relativePath);
+      if (!targetPath) continue;
+      if (file.path === source.path) primaryTargetPath = targetPath;
+      const fileContent =
+        file.content ?? (file.path === source.path ? content : await readText(file.path));
+      written =
+        (await this.writeTarget(adapter, asset, type, name, fileContent, targetPath)) || written;
+    }
+    if (primaryTargetPath) {
+      this.upsertStub(asset, targetTool, primaryTargetPath, contentHash);
+    }
+    await ensureDir(dirname(this.getCanonicalPath(type, name)));
+    await writeText(this.getCanonicalPath(type, name), content);
+    await this.registry.save();
+    return written;
+  }
+
+  async detachAssetFromTool(name: string, type: AssetType, tool: string): Promise<boolean> {
+    await this.scanner.initialize();
+    try {
+      this.registry.get();
+    } catch {
+      await this.registry.load();
+    }
+
+    const asset = this.registry.findAsset(name, type);
+    const discovered = (await this.scanner.scanTool(tool, [type])).find(
+      (item) => item.name === name
+    );
+    const path = asset?.stubs.find((stub) => stub.tool === tool)?.path ?? discovered?.path;
+    if (!path) return false;
+    const deletableAsset: Asset = asset ?? {
+      id: RegistryManager.generateId(),
+      name,
+      type,
+      last_modified_at: Date.now(),
+      last_synced_at: new Date().toISOString(),
+      stubs: [],
+    };
+    const deleted = await this.deleteStubTarget(deletableAsset, {
+      tool,
+      path,
+      written_at: new Date().toISOString(),
+      hash: '',
+    });
+    if (asset && deleted) {
+      asset.stubs = asset.stubs.filter((stub) => stub.tool !== tool);
+      await this.registry.save();
+    }
+    return deleted > 0;
+  }
+
   private calculateHash(content: string): string {
     return createHash('sha256').update(content).digest('hex');
   }

@@ -137,4 +137,28 @@ describe('Cross-Provider Sync: MCP Servers', () => {
       JSON.parse(await readText(join(tmpBase, '.claude', 'mcp.json'))).mcpServers.filesystem
     ).toEqual(expected);
   });
+
+  it('attaches and detaches one MCP server from a selected provider', async () => {
+    const geminiMcpPath = join(tmpBase, '.gemini', 'settings.json');
+    await writeText(
+      geminiMcpPath,
+      JSON.stringify({ mcpServers: { local: { command: 'node', args: ['server.js'] } } })
+    );
+    const syncer = new Syncer(
+      new RegistryManager('workspace'),
+      new Scanner('workspace'),
+      'workspace'
+    );
+
+    await syncer.attachAssetToTool('local', 'mcp', 'gemini', 'claude');
+    const claudeMcpPath = join(tmpBase, '.claude', 'mcp.json');
+    expect(JSON.parse(await readText(claudeMcpPath)).mcpServers.local).toEqual({
+      command: 'node',
+      args: ['server.js'],
+    });
+
+    await syncer.detachAssetFromTool('local', 'mcp', 'claude');
+    expect(JSON.parse(await readText(claudeMcpPath)).mcpServers.local).toBeUndefined();
+    expect(JSON.parse(await readText(geminiMcpPath)).mcpServers.local).toBeDefined();
+  });
 });

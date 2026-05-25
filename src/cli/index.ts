@@ -8,6 +8,7 @@ import { syncToCommand } from './commands/sync-to.js';
 import { statusCommand } from './commands/status.js';
 import { configCommand } from './commands/config.js';
 import { watchCommand } from './commands/watch.js';
+import { visualizerCommand } from './commands/visualizer.js';
 
 const program = new Command();
 
@@ -63,6 +64,26 @@ program.addCommand(
     .option('--scope <scope>', 'user or workspace', 'workspace')
     .description('Watch for changes and auto-sync')
     .action((options) => watchCommand(options))
+);
+
+program.addCommand(
+  new Command('visualizer')
+    .option('--scope <scope>', 'user or workspace', 'workspace')
+    .option('--host <host>', 'Host to bind', '127.0.0.1')
+    .option('--port <port>', 'Port to bind', '4072')
+    .option('--no-open', 'Do not open browser automatically')
+    .description('Open interactive sync visualizer with built-in backend')
+    .action((options) => visualizerCommand(options))
+);
+
+program.addCommand(
+  new Command('ui')
+    .option('--scope <scope>', 'user or workspace', 'workspace')
+    .option('--host <host>', 'Host to bind', '127.0.0.1')
+    .option('--port <port>', 'Port to bind', '4072')
+    .option('--no-open', 'Do not open browser automatically')
+    .description('Alias for `visualizer`')
+    .action((options) => visualizerCommand(options))
 );
 
 program.parse(process.argv);

@@ -83,6 +83,28 @@ describe('Cross-Provider Sync: Skills', () => {
     expect(await readText(githubCopilotMirror)).toBe(skillContent);
   });
 
+  it('attaches and detaches one dragged skill without removing its source', async () => {
+    const geminiSkillDir = join(tmpBase, '.gemini', 'skills', 'dragged-skill');
+    const geminiSkillPath = join(geminiSkillDir, 'SKILL.md');
+    await ensureDir(geminiSkillDir);
+    await writeText(geminiSkillPath, '# Dragged skill\n');
+
+    const syncer = new Syncer(
+      new RegistryManager('workspace'),
+      new Scanner('workspace'),
+      'workspace'
+    );
+    await syncer.attachAssetToTool('dragged-skill', 'skill', 'gemini', 'claude');
+
+    const claudeSkill = join(tmpBase, '.claude', 'skills', 'dragged-skill', 'SKILL.md');
+    expect(await readText(claudeSkill)).toBe('# Dragged skill\n');
+
+    await syncer.detachAssetFromTool('dragged-skill', 'skill', 'claude');
+
+    expect(await fileExists(claudeSkill)).toBe(false);
+    expect(await fileExists(geminiSkillPath)).toBe(true);
+  });
+
   it('syncs Gemini workspace context to native Claude workspace context', async () => {
     const geminiContext = join(tmpBase, 'GEMINI.md');
     const contextContent = '# Shared project context\n';

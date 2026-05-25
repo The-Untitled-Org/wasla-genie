@@ -64,6 +64,11 @@
     "coverage:open": "open output/index.html",
     "docs": "cd docs && npm run start",
     "docs:build": "cd docs && npm run build",
+    "visualizer": "npm run visualizer:build && npm run build && node dist/cli/index.js visualizer --scope workspace",
+    "ui": "npm run visualizer",
+    "visualizer:dev": "npm --prefix src/visualizer run dev",
+    "visualizer:build": "npm --prefix src/visualizer run build",
+    "visualizer:preview": "npm --prefix src/visualizer run preview",
     "lint": "tsc --noEmit",
     "lint:check": "tsc --noEmit",
     "lint:fix": "tsc --noEmit && prettier --write 'src/**/*.ts' 'tests/**/*.ts'",
@@ -90,9 +95,11 @@
   "dependencies": {
     "chokidar": "^3.5.3",
     "commander": "^11.1.0",
-    "prompts": "^2.4.2"
+    "prompts": "^2.4.2",
+    "ws": "^8.21.0"
   },
   "devDependencies": {
+    "@types/ws": "^8.18.1",
     "@types/node": "^20.10.6",
     "@vitest/coverage-v8": "^1.6.1",
     "@vitest/ui": "^1.0.0",

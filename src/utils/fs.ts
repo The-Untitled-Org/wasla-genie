@@ -66,15 +66,23 @@ export async function listDirs(dir: string): Promise<string[]> {
 }
 
 export function getFileName(path: string): string {
-  return path.split('/').pop() || '';
+  return path.split(/[/\\]/).pop() || '';
 }
 
 export function getFileNameWithoutExt(path: string): string {
   const fileName = getFileName(path);
-  return fileName.split('.')[0];
+  const lastDotIndex = fileName.lastIndexOf('.');
+  if (lastDotIndex > 0) {
+    return fileName.substring(0, lastDotIndex);
+  }
+  return fileName;
 }
 
 export function getFileExtension(path: string): string {
-  const parts = path.split('.');
-  return parts.length > 1 ? parts[parts.length - 1] : '';
+  const fileName = getFileName(path);
+  const lastDotIndex = fileName.lastIndexOf('.');
+  if (lastDotIndex > 0 && lastDotIndex < fileName.length - 1) {
+    return fileName.substring(lastDotIndex + 1);
+  }
+  return '';
 }

@@ -266,7 +266,7 @@ export class Scanner {
   private extractAssetName(relativePathOrFileName: string): string {
     // For nested paths: waslagenie/SKILL.md -> waslagenie
     // For flat files: researcher.md -> researcher
-    const parts = relativePathOrFileName.split('/');
+    const parts = relativePathOrFileName.split(/[/\\]/);
     if (parts.length > 1) {
       // Nested: return first directory
       return parts[0];

@@ -186,8 +186,13 @@ describe('fs helpers — path string functions', () => {
       expect(getFileName('/home/user/.claude/agents/researcher.md')).toBe('researcher.md');
     });
 
+    it('extracts the filename from a Windows-style path', () => {
+      expect(getFileName('C:\\home\\user\\.claude\\agents\\researcher.md')).toBe('researcher.md');
+    });
+
     it('returns empty string for trailing slash', () => {
       expect(getFileName('/home/user/')).toBe('');
+      expect(getFileName('C:\\home\\user\\')).toBe('');
     });
   });
 
@@ -196,12 +201,24 @@ describe('fs helpers — path string functions', () => {
       expect(getFileNameWithoutExt('/path/to/researcher.md')).toBe('researcher');
     });
 
+    it('strips the extension from a Windows-style path', () => {
+      expect(getFileNameWithoutExt('C:\\path\\to\\researcher.md')).toBe('researcher');
+    });
+
     it('strips .json extension', () => {
       expect(getFileNameWithoutExt('/path/to/notion.json')).toBe('notion');
     });
 
+    it('handles files with multiple dots correctly', () => {
+      expect(getFileNameWithoutExt('/path/to/my.awesome.file.txt')).toBe('my.awesome.file');
+    });
+
     it('handles file with no extension', () => {
       expect(getFileNameWithoutExt('/path/to/noext')).toBe('noext');
+    });
+
+    it('handles hidden files', () => {
+      expect(getFileNameWithoutExt('/path/to/.hidden')).toBe('.hidden');
     });
   });
 
@@ -210,12 +227,29 @@ describe('fs helpers — path string functions', () => {
       expect(getFileExtension('researcher.md')).toBe('md');
     });
 
+    it('returns md for Windows-style paths', () => {
+      expect(getFileExtension('C:\\path\\to\\researcher.md')).toBe('md');
+    });
+
     it('returns json for JSON files', () => {
       expect(getFileExtension('config.json')).toBe('json');
     });
 
+    it('returns correct extension for files with multiple dots', () => {
+      expect(getFileExtension('/path/to/my.awesome.file.txt')).toBe('txt');
+    });
+
     it('getFileExtension returns empty string for files without extension', () => {
       expect(getFileExtension('path/to/README')).toBe('');
+    });
+
+    it('getFileExtension returns empty string for hidden files without extension', () => {
+      expect(getFileExtension('path/to/.hidden')).toBe('');
+    });
+
+    it('does not get confused by dots in directory names', () => {
+      expect(getFileExtension('/path.with.dots/README')).toBe('');
+      expect(getFileExtension('/path.with.dots/README.md')).toBe('md');
     });
   });
 });

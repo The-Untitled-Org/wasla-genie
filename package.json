@@ -7,7 +7,12 @@
   "bin": {
     "waslagenie": "dist/cli/index.js"
   },
+  "files": [
+    "dist",
+    "src/visualizer/dist"
+  ],
   "scripts": {
+    "prepublishOnly": "npm run visualizer:build && npm run build",
     "build": "npm run check && node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && tsc",
     "dev": "tsc --watch",
     "start": "node dist/cli/index.js",

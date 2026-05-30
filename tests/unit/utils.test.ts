@@ -136,13 +136,12 @@ describe('getToolMarkers — platform specific adjustments', () => {
 
   it('adjusts github-copilot and opencode paths on win32 when APPDATA is present', () => {
     vi.stubGlobal('process', { ...process, platform: 'win32' });
-    vi.stubEnv('APPDATA', 'C:\\Users\\Test\\AppData\\Roaming');
+    const appData = 'C:\\Users\\Test\\AppData\\Roaming';
+    vi.stubEnv('APPDATA', appData);
 
     const markers = getToolMarkers('user');
-    expect(markers['github-copilot']).toBe(
-      resolve('C:\\Users\\Test\\AppData\\Roaming\\Code\\User')
-    );
-    expect(markers['opencode']).toBe(resolve('C:\\Users\\Test\\AppData\\Roaming\\opencode'));
+    expect(markers['github-copilot']).toBe(resolve(join(appData, 'Code/User')));
+    expect(markers['opencode']).toBe(resolve(join(appData, 'opencode')));
   });
 
   it('does NOT adjust paths on win32 when APPDATA is missing', () => {

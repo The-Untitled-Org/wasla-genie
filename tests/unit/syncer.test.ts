@@ -16,7 +16,7 @@ import { Syncer } from '@syncer/index';
 import { RegistryManager } from '@core/registry';
 import { Scanner } from '@core/scanner';
 import { writeText, ensureDir, readText, fileExists } from '@utils/fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { tmpdir } from 'os';
 import { mkdtemp, rm } from 'fs/promises';
 import * as pathUtils from '@utils/paths';
@@ -180,10 +180,10 @@ describe('Syncer — core sync() logic', () => {
 
     // Mock paths to match our latest.path
     vi.spyOn(pathUtils, 'getToolMarkers').mockReturnValue({
-      claude: '/claude',
-      gemini: '/gemini',
-      openclaw: '/openclaw',
-      codex: '/codex',
+      claude: resolve('/claude'),
+      gemini: resolve('/gemini'),
+      openclaw: resolve('/openclaw'),
+      codex: resolve('/codex'),
     });
 
     // Mock scanner.detectInstalledTools
@@ -201,7 +201,7 @@ describe('Syncer — core sync() logic', () => {
         type: 'agent',
         relativePath: 'researcher.md',
         isStub: false,
-        path: '/gemini/agents/researcher.md',
+        path: resolve('/gemini/agents/researcher.md'),
         modifiedAt: 5000,
         tool: 'gemini',
       },
@@ -210,7 +210,7 @@ describe('Syncer — core sync() logic', () => {
         type: 'agent',
         relativePath: 'researcher.md',
         isStub: false,
-        path: '/claude/agents/researcher.md',
+        path: resolve('/claude/agents/researcher.md'),
         modifiedAt: 1000,
         tool: 'claude',
       },
@@ -227,7 +227,7 @@ describe('Syncer — core sync() logic', () => {
     expect(result.stubsWritten).toBeGreaterThanOrEqual(1); // wrote to claude
 
     // The Gemini version had mtime 5000, so it should read that one
-    expect(readSpy).toHaveBeenCalledWith('/gemini/agents/researcher.md');
+    expect(readSpy).toHaveBeenCalledWith(resolve('/gemini/agents/researcher.md'));
 
     // It should have logged the interactive message
     expect(consoleSpy).toHaveBeenCalledWith(

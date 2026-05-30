@@ -3,9 +3,9 @@ import { resolve, join } from 'path';
 
 export function expandTilde(path: string): string {
   if (path.startsWith('~')) {
-    return join(homedir(), path.slice(1));
+    return resolve(join(homedir(), path.slice(1)));
   }
-  return path;
+  return resolve(path);
 }
 
 export function getRegistryPath(scope: 'user' | 'workspace'): string {
@@ -41,7 +41,7 @@ export function getToolMarkers(scope: 'user' | 'workspace' = 'user'): Record<str
     };
   }
 
-  return {
+  const markers: Record<string, string> = {
     claude: expandTilde('~/.claude'),
     gemini: expandTilde('~/.gemini'),
     openclaw: expandTilde('~/.openclaw'),
@@ -50,19 +50,29 @@ export function getToolMarkers(scope: 'user' | 'workspace' = 'user'): Record<str
     'github-copilot': expandTilde('~/.config/Code/User'),
     'github-copilot-cli': expandTilde('~/.copilot'),
   };
+
+  // Adjust for Windows if necessary
+  if (process.platform === 'win32') {
+    const appData = process.env.APPDATA;
+    if (appData) {
+      markers['github-copilot'] = resolve(join(appData, 'Code/User'));
+      markers['opencode'] = resolve(join(appData, 'opencode'));
+    }
+  }
+
+  return markers;
 }
 
 export function getToolName(toolPath: string): string | null {
+  const normalizedToolPath = resolve(toolPath);
   const userMarkers = getToolMarkers('user');
   const workspaceMarkers = getToolMarkers('workspace');
 
-  // Search user and workspace maps independently so that workspace keys
-  // do not overwrite user keys (they share the same key names but different paths).
   for (const [name, path] of Object.entries(userMarkers)) {
-    if (toolPath === path) return name;
+    if (normalizedToolPath === resolve(path)) return name;
   }
   for (const [name, path] of Object.entries(workspaceMarkers)) {
-    if (toolPath === path) return name;
+    if (normalizedToolPath === resolve(path)) return name;
   }
   return null;
 }

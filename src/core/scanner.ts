@@ -1,6 +1,6 @@
 import { AssetType, DiscoveredFile, Conflict } from '../core/types.js';
 import { fileExists, isDirectory, readJSON } from '../utils/fs.js';
-import { join } from 'path';
+import { join, relative, sep } from 'path';
 import { getToolMarkers, getRegistryPath } from '../utils/paths.js';
 import { stat, readdir } from 'fs/promises';
 import { getAdapter } from '../adapters/factory.js';
@@ -147,7 +147,7 @@ export class Scanner {
         }
 
         // Compute relative path from typePath
-        const relativePath = filePath.substring(typePath.length + 1);
+        const relativePath = relative(typePath, filePath);
         const name = this.extractAssetName(relativePath);
 
         if (process.env.DEBUG_SCANNER) {
@@ -266,7 +266,7 @@ export class Scanner {
   private extractAssetName(relativePathOrFileName: string): string {
     // For nested paths: waslagenie/SKILL.md -> waslagenie
     // For flat files: researcher.md -> researcher
-    const parts = relativePathOrFileName.split('/');
+    const parts = relativePathOrFileName.split(sep);
     if (parts.length > 1) {
       // Nested: return first directory
       return parts[0];

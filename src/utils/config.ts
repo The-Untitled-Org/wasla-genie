@@ -17,6 +17,9 @@ export async function readConfiguredScope(): Promise<WaslaScope | null> {
   if (!(await fileExists(configPath))) return null;
 
   const config = await readJSON<WaslaConfig>(configPath);
+  if (typeof config !== 'object' || config === null || typeof config.scope !== 'string') {
+    throw new Error(`Invalid scope in ${configPath}. Run: waslagenie config --scope <scope>`);
+  }
   if (config.scope !== 'user' && config.scope !== 'workspace') {
     throw new Error(`Invalid scope in ${configPath}. Run: waslagenie config --scope <scope>`);
   }

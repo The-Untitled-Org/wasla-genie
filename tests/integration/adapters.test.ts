@@ -202,7 +202,7 @@ describe.each([
   it('uses native .github/skills directories with SKILL.md content', () => {
     const adapter = new AdapterClass('workspace');
 
-    expect(adapter.paths.skill).toMatch(/\.github\/skills$/);
+    expect(adapter.paths.skill).toMatch(/[\/\\]\.github[\/\\]skills$/);
     expect(adapter.formats.skill).toBe('md');
     expect(adapter.skillDirs).toEqual([adapter.paths.skill]);
   });
@@ -210,8 +210,10 @@ describe.each([
 
 describe('Copilot host MCP locations', () => {
   it('uses VS Code MCP config for GitHub Copilot and .mcp.json for Copilot CLI', () => {
-    expect(new GithubCopilotAdapter('workspace').paths.mcp).toMatch(/\.vscode\/mcp\.json$/);
-    expect(new GithubCopilotCliAdapter('workspace').paths.mcp).toMatch(/\.mcp\.json$/);
+    expect(new GithubCopilotAdapter('workspace').paths.mcp).toMatch(
+      /[\/\\]\.vscode[\/\\]mcp\.json$/
+    );
+    expect(new GithubCopilotCliAdapter('workspace').paths.mcp).toMatch(/[\/\\]\.mcp\.json$/);
   });
 });
 

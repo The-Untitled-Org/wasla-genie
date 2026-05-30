@@ -8,7 +8,7 @@
     "waslagenie": "dist/cli/index.js"
   },
   "scripts": {
-    "build": "npm run check && rm -rf dist && tsc && chmod +x dist/cli/index.js",
+    "build": "npm run check && node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && tsc",
     "dev": "tsc --watch",
     "start": "node dist/cli/index.js",
     "sync": "npm run build && node dist/cli/index.js sync --scope workspace",
@@ -71,14 +71,14 @@
     "visualizer:preview": "npm --prefix src/visualizer run preview",
     "lint": "tsc --noEmit",
     "lint:check": "tsc --noEmit",
-    "lint:fix": "tsc --noEmit && prettier --write 'src/**/*.ts' 'tests/**/*.ts'",
-    "format": "prettier --write 'src/**/*.ts' 'tests/**/*.ts' '.prettierrc'",
-    "format:check": "prettier --check 'src/**/*.ts' 'tests/**/*.ts' '.prettierrc'",
+    "lint:fix": "tsc --noEmit && prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \".prettierrc\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \".prettierrc\"",
     "type:check": "tsc --noEmit",
-    "type:fix": "tsc --noEmit && prettier --write 'src/**/*.ts' 'tests/**/*.ts'",
+    "type:fix": "tsc --noEmit && prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "check": "npm run type:check && npm run format:check",
     "fix": "npm run format && npm run lint:fix",
-    "clean": "rm -rf dist .nyc_output output coverage",
+    "clean": "node -e \"['dist', '.nyc_output', 'output', 'coverage'].forEach(p => require('fs').rmSync(p, { recursive: true, force: true }))\"",
     "all": "npm run clean && npm run build && npm run check && npm test"
   },
   "keywords": [

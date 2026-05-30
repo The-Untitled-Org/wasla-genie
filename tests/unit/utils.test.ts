@@ -1,19 +1,10 @@
 /**
  * Paths & FS Utility Unit Tests
- *
- * Covers (per implementation-plan.md §Phase 2 utils):
- *  - expandTilde — ~ → homedir
- *  - getRegistryPath — user vs workspace scope
- *  - getRegistryDir — user vs workspace scope
- *  - getToolMarkers — user vs workspace, correct tool set
- *  - getToolName — reverse lookup
- *  - getToolDisplayName — human-readable names
- *  - fs helpers: fileExists, isDirectory, listFiles, getFileNameWithoutExt, getFileExtension
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { homedir } from 'os';
-import { resolve } from 'path';
+import { resolve, join, isAbsolute, normalize } from 'path';
 import {
   expandTilde,
   getRegistryPath,
@@ -29,11 +20,11 @@ import { getFileName, getFileNameWithoutExt, getFileExtension } from '@utils/fs'
 describe('expandTilde', () => {
   it('expands leading ~ to homedir', () => {
     const result = expandTilde('~/.waslagenie/registry.json');
-    expect(result).toBe(`${homedir()}/.waslagenie/registry.json`);
+    expect(normalize(result)).toBe(resolve(join(homedir(), '.waslagenie/registry.json')));
   });
 
   it('returns the path unchanged when it does not start with ~', () => {
-    const abs = '/absolute/path/file.json';
+    const abs = resolve('/absolute/path/file.json');
     expect(expandTilde(abs)).toBe(abs);
   });
 
@@ -42,7 +33,7 @@ describe('expandTilde', () => {
   });
 
   it('handles ~/subdir correctly', () => {
-    expect(expandTilde('~/subdir')).toBe(`${homedir()}/subdir`);
+    expect(normalize(expandTilde('~/subdir'))).toBe(resolve(join(homedir(), 'subdir')));
   });
 });
 
@@ -101,12 +92,12 @@ describe('getToolMarkers', () => {
 
   it('user scope paths are absolute', () => {
     const markers = getToolMarkers('user');
-    Object.values(markers).forEach((p) => expect(p.startsWith('/')).toBe(true));
+    Object.values(markers).forEach((p) => expect(isAbsolute(p)).toBe(true));
   });
 
   it('workspace scope paths are absolute', () => {
     const markers = getToolMarkers('workspace');
-    Object.values(markers).forEach((p) => expect(p.startsWith('/')).toBe(true));
+    Object.values(markers).forEach((p) => expect(isAbsolute(p)).toBe(true));
   });
 
   it('user scope claude path contains .claude', () => {
@@ -126,7 +117,6 @@ describe('getToolMarkers', () => {
 
   it('workspace scope uses relative-to-cwd paths', () => {
     const markers = getToolMarkers('workspace');
-    // workspace paths should be within the current directory
     expect(markers.claude).toBe(resolve('.claude'));
     expect(markers.gemini).toBe(resolve('.gemini'));
   });
@@ -135,6 +125,42 @@ describe('getToolMarkers', () => {
     const defaultMarkers = getToolMarkers();
     const userMarkers = getToolMarkers('user');
     expect(defaultMarkers).toEqual(userMarkers);
+  });
+});
+
+describe('getToolMarkers — platform specific adjustments', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+
+  it('adjusts github-copilot and opencode paths on win32 when APPDATA is present', () => {
+    vi.stubGlobal('process', { ...process, platform: 'win32' });
+    const appData = 'C:\\Users\\Test\\AppData\\Roaming';
+    vi.stubEnv('APPDATA', appData);
+
+    const markers = getToolMarkers('user');
+    expect(markers['github-copilot']).toBe(resolve(join(appData, 'Code/User')));
+    expect(markers['opencode']).toBe(resolve(join(appData, 'opencode')));
+  });
+
+  it('does NOT adjust paths on win32 when APPDATA is missing', () => {
+    vi.stubGlobal('process', { ...process, platform: 'win32' });
+    vi.stubEnv('APPDATA', ''); // Empty string counts as falsy in paths.ts
+
+    const markers = getToolMarkers('user');
+    // Should remain as default paths (expanded tilde)
+    expect(markers['github-copilot']).toBe(expandTilde('~/.config/Code/User'));
+    expect(markers['opencode']).toBe(expandTilde('~/.config/opencode'));
+  });
+
+  it('does NOT adjust paths on non-win32 platforms (e.g., darwin)', () => {
+    vi.stubGlobal('process', { ...process, platform: 'darwin' });
+    vi.stubEnv('APPDATA', '/should/be/ignored');
+
+    const markers = getToolMarkers('user');
+    expect(markers['github-copilot']).toBe(expandTilde('~/.config/Code/User'));
+    expect(markers['opencode']).toBe(expandTilde('~/.config/opencode'));
   });
 });
 
@@ -154,7 +180,7 @@ describe('getToolName', () => {
   });
 
   it('returns null for an unknown path', () => {
-    expect(getToolName('/some/unknown/path')).toBeNull();
+    expect(getToolName(resolve('/some/unknown/path'))).toBeNull();
   });
 });
 
@@ -183,25 +209,25 @@ describe('getToolDisplayName', () => {
 describe('fs helpers — path string functions', () => {
   describe('getFileName', () => {
     it('extracts the filename from an absolute path', () => {
-      expect(getFileName('/home/user/.claude/agents/researcher.md')).toBe('researcher.md');
+      expect(getFileName(resolve('/home/user/.claude/agents/researcher.md'))).toBe('researcher.md');
     });
 
-    it('returns empty string for trailing slash', () => {
-      expect(getFileName('/home/user/')).toBe('');
+    it('returns the directory name for trailing slash (consistent with path.basename)', () => {
+      expect(getFileName(normalize('/home/user/'))).toBe('user');
     });
   });
 
   describe('getFileNameWithoutExt', () => {
     it('strips the extension from a file name', () => {
-      expect(getFileNameWithoutExt('/path/to/researcher.md')).toBe('researcher');
+      expect(getFileNameWithoutExt(resolve('/path/to/researcher.md'))).toBe('researcher');
     });
 
     it('strips .json extension', () => {
-      expect(getFileNameWithoutExt('/path/to/notion.json')).toBe('notion');
+      expect(getFileNameWithoutExt(resolve('/path/to/notion.json'))).toBe('notion');
     });
 
     it('handles file with no extension', () => {
-      expect(getFileNameWithoutExt('/path/to/noext')).toBe('noext');
+      expect(getFileNameWithoutExt(resolve('/path/to/noext'))).toBe('noext');
     });
   });
 
@@ -270,7 +296,7 @@ describe('fs helpers — filesystem interaction', () => {
 
   it('listFiles returns empty array on error', async () => {
     const { listFiles } = await import('@utils/fs');
-    expect(await listFiles('/path/does/not/exist/123')).toEqual([]);
+    expect(await listFiles(resolve('/path/does/not/exist/123'))).toEqual([]);
   });
 
   it('listDirs returns only directories', async () => {
@@ -289,6 +315,6 @@ describe('fs helpers — filesystem interaction', () => {
 
   it('listDirs returns empty array on error', async () => {
     const { listDirs } = await import('@utils/fs');
-    expect(await listDirs('/path/does/not/exist/123')).toEqual([]);
+    expect(await listDirs(resolve('/path/does/not/exist/123'))).toEqual([]);
   });
 });

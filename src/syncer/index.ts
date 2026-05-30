@@ -2,7 +2,7 @@ import { DiscoveredFile, AssetType, Asset, WaslaGenieAdapter } from '../core/typ
 import { RegistryManager } from '../core/registry.js';
 import { Scanner } from '../core/scanner.js';
 import { getAdapter } from '../adapters/factory.js';
-import { basename, dirname, join } from 'path';
+import { basename, dirname, join, sep } from 'path';
 import { getRegistryDir } from '../utils/paths.js';
 import {
   readText,
@@ -67,7 +67,10 @@ export class Syncer {
       const sorted = items.sort((a, b) => b.modifiedAt - a.modifiedAt);
       const latest =
         type === 'skill'
-          ? sorted.find((item) => item.relativePath.endsWith('/SKILL.md')) || sorted[0]
+          ? sorted.find(
+              (item) =>
+                item.relativePath.endsWith(`${sep}SKILL.md`) || item.relativePath === 'SKILL.md'
+            ) || sorted[0]
           : sorted[0];
 
       // Check if we should prompt the user in interactive mode if there are multiple versions
@@ -251,7 +254,10 @@ export class Syncer {
       const sorted = items.sort((a, b) => b.modifiedAt - a.modifiedAt);
       const source =
         type === 'skill'
-          ? sorted.find((item) => item.relativePath.endsWith('/SKILL.md')) || sorted[0]
+          ? sorted.find(
+              (item) =>
+                item.relativePath.endsWith(`${sep}SKILL.md`) || item.relativePath === 'SKILL.md'
+            ) || sorted[0]
           : sorted[0];
 
       const content = source.content ?? (await readText(source.path));
@@ -383,7 +389,10 @@ export class Syncer {
     const sorted = sourceItems.sort((a, b) => b.modifiedAt - a.modifiedAt);
     const source =
       type === 'skill'
-        ? sorted.find((item) => item.relativePath.endsWith('/SKILL.md')) || sorted[0]
+        ? sorted.find(
+            (item) =>
+              item.relativePath.endsWith(`${sep}SKILL.md`) || item.relativePath === 'SKILL.md'
+          ) || sorted[0]
         : sorted[0];
     const content = source.content ?? (await readText(source.path));
     const contentHash = this.calculateHash(content);
@@ -480,7 +489,7 @@ export class Syncer {
     if (format === 'agent.md') return join(typeDir, `${name}.agent.md`);
     if (format === 'mdc') return join(typeDir, `${name}.mdc`);
     if (format === 'instructions.md') return join(typeDir, `${name}.instructions.md`);
-    if (type === 'skill' && relativePath.includes('/')) return join(typeDir, relativePath);
+    if (type === 'skill' && dirname(relativePath) !== '.') return join(typeDir, relativePath);
     return join(typeDir, `${name}.${format}`);
   }
 

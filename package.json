@@ -110,6 +110,7 @@
   "devDependencies": {
     "@ai-hero/sandcastle": "^0.6.6",
     "@types/node": "^20.10.6",
+    "@types/prompts": "^2.4.9",
     "@types/ws": "^8.18.1",
     "@vitest/coverage-v8": "^1.6.1",
     "@vitest/ui": "^1.0.0",

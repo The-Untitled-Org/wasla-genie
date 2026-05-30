@@ -61,6 +61,7 @@
     "sync:github-copilot-cli:cursor": "npm run build && node dist/cli/index.js sync-to --from github-copilot-cli --to cursor --scope workspace",
     "sync:github-copilot-cli:github-copilot": "npm run build && node dist/cli/index.js sync-to --from github-copilot-cli --to github-copilot --scope workspace",
     "test": "vitest",
+    "test:run": "vitest run",
     "test:watch": "vitest --watch",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",

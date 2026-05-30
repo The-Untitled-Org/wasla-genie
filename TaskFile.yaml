@@ -17,4 +17,4 @@ tasks:
       - npm run docs:install
       - npm run build
       - npm run docs:build
-      - npm test
+      - npm run test:run

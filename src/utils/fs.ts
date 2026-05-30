@@ -1,5 +1,4 @@
 import { readdir, readFile, writeFile, stat, mkdir, rm } from 'fs/promises';
-import { basename, extname } from 'path';
 
 export async function fileExists(path: string): Promise<boolean> {
   try {
@@ -67,16 +66,23 @@ export async function listDirs(dir: string): Promise<string[]> {
 }
 
 export function getFileName(path: string): string {
-  return basename(path);
+  return path.split(/[/\\]/).filter(Boolean).pop() || '';
 }
 
 export function getFileNameWithoutExt(path: string): string {
-  const fileName = basename(path);
-  const ext = extname(fileName);
-  return fileName.slice(0, fileName.length - ext.length);
+  const fileName = getFileName(path);
+  const dotIndex = fileName.lastIndexOf('.');
+  if (dotIndex <= 0) {
+    return fileName;
+  }
+  return fileName.substring(0, dotIndex);
 }
 
 export function getFileExtension(path: string): string {
-  const ext = extname(path);
-  return ext.startsWith('.') ? ext.slice(1) : ext;
+  const fileName = getFileName(path);
+  const dotIndex = fileName.lastIndexOf('.');
+  if (dotIndex <= 0) {
+    return '';
+  }
+  return fileName.substring(dotIndex + 1);
 }

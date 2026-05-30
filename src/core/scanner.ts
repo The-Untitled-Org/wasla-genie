@@ -1,6 +1,6 @@
 import { AssetType, DiscoveredFile, Conflict } from '../core/types.js';
 import { fileExists, isDirectory, readJSON } from '../utils/fs.js';
-import { join, relative, sep } from 'path';
+import { join, relative } from 'path';
 import { getToolMarkers, getRegistryPath } from '../utils/paths.js';
 import { stat, readdir } from 'fs/promises';
 import { getAdapter } from '../adapters/factory.js';
@@ -266,13 +266,18 @@ export class Scanner {
   private extractAssetName(relativePathOrFileName: string): string {
     // For nested paths: waslagenie/SKILL.md -> waslagenie
     // For flat files: researcher.md -> researcher
-    const parts = relativePathOrFileName.split(sep);
+    const parts = relativePathOrFileName.split(/[/\\]/);
     if (parts.length > 1) {
       // Nested: return first directory
       return parts[0];
     }
     // Flat: remove extension
-    return parts[0].split('.')[0];
+    const fileName = parts[0];
+    const dotIndex = fileName.lastIndexOf('.');
+    if (dotIndex <= 0) {
+      return fileName;
+    }
+    return fileName.substring(0, dotIndex);
   }
 
   private readNestedRecord(

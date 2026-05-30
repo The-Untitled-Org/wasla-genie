@@ -1,5 +1,6 @@
 import { createServer, IncomingMessage, ServerResponse } from 'http';
-import { extname, join, resolve } from 'path';
+import { dirname, extname, join, resolve } from 'path';
+import { fileURLToPath } from 'url';
 import { readFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { exec } from 'child_process';
@@ -14,6 +15,10 @@ import type {
   VisualizerEntity,
   VisualizerEntityType,
 } from '../../core/visualizer-types.js';
+
+export function resolveVisualizerDist(moduleUrl: string): string {
+  return resolve(dirname(fileURLToPath(moduleUrl)), '../../../src/visualizer/dist');
+}
 
 interface VisualizerOptions {
   scope?: string;
@@ -166,7 +171,7 @@ export async function visualizerCommand(options: VisualizerOptions): Promise<voi
     section('Starting visualizer...');
     spacer();
 
-    const visualizerDist = resolve(process.cwd(), 'src/visualizer/dist');
+    const visualizerDist = resolveVisualizerDist(import.meta.url);
     if (!existsSync(visualizerDist)) {
       error('Visualizer assets not found. Build first with: npm run visualizer:build');
       process.exit(1);

@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: done
 
 ## Parent
 [.scratch/npm-publishing/PRD.md](PRD.md)

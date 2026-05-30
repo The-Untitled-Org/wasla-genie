@@ -121,7 +121,7 @@ The same pattern applies across every asset type:
 WaslaGenie is cross-platform via `npx` — no global install required:
 
 ```bash
-npx wasla-genie sync
+npx @untitled-devs/wasla sync
 ```
 
 This runs the CLI directly. It does not register helper skills inside Claude, Gemini, or other tools.
@@ -129,7 +129,7 @@ This runs the CLI directly. It does not register helper skills inside Claude, Ge
 **Or install globally:**
 
 ```bash
-npm install -g wasla-genie
+npm install -g @untitled-devs/wasla
 waslagenie sync
 ```
 
@@ -155,6 +155,9 @@ waslagenie sync
 # Keep syncing while you work
 waslagenie watch
 
+# Open the visualizer dashboard
+waslagenie visualizer
+
 # Optional: install helper skill in all detected providers
 waslagenie register
 
@@ -165,7 +168,11 @@ waslagenie register --to claude,gemini
 You can also run without global install:
 
 ```bash
-npx wasla-genie sync
+# Run sync
+npx @untitled-devs/wasla sync
+
+# Open visualizer
+npx @untitled-devs/wasla visualizer
 ```
 
 ### You (developing this repo)

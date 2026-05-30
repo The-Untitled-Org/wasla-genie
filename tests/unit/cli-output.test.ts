@@ -111,6 +111,28 @@ describe('cli-output utilities', () => {
     expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Updated:'));
   });
 
+  it('assetList shows all providers when activeProviders is undefined', () => {
+    assetList(
+      [
+        {
+          id: 'skill-1',
+          name: 'reviewer',
+          type: 'skill',
+          last_modified_at: 0,
+          last_synced_at: '2026-05-31T00:00:00.000Z',
+          stubs: [
+            { tool: 'claude', path: '/claude/reviewer', written_at: '', hash: '' },
+            { tool: 'gemini', path: '/gemini/reviewer', written_at: '', hash: '' },
+          ],
+        },
+      ],
+      false
+    );
+
+    expect(consoleLogSpy).toHaveBeenCalledWith('\u001b[36m\u001b[1m  SKILLS (1)\u001b[0m');
+    expect(consoleLogSpy).toHaveBeenCalledWith('    \u001b[34mMirrors:\u001b[0m claude, gemini');
+  });
+
   it('step prints with newline', () => {
     step('Step 1');
     expect(consoleLogSpy).toHaveBeenCalledWith('\nStep 1');

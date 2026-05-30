@@ -41,9 +41,9 @@ export async function configCommand(options: ConfigOptions): Promise<boolean> {
 
     section('Configure Scope');
     spacer();
-    const response = await prompts<WaslaScope>({
+    const response = await prompts<string>({
       type: 'select',
-      name: 'scope',
+      name: 'scope' as const,
       message: 'Where should WaslaGenie store and sync assets?',
       choices: [
         { title: 'Workspace - current project only', value: 'workspace' },
@@ -51,11 +51,12 @@ export async function configCommand(options: ConfigOptions): Promise<boolean> {
       ],
       initial: currentScope === 'user' ? 1 : 0,
     });
-    if (!response.scope) {
+    const scope = response.scope as WaslaScope | undefined;
+    if (!scope) {
       info('Configuration cancelled');
       return false;
     }
-    await saveScope(response.scope);
+    await saveScope(scope);
     return true;
   } catch (err) {
     error(`Config failed: ${err}`);

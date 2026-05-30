@@ -9,4 +9,10 @@ describe('package.json npm publish config', () => {
   it('has a prepublishOnly script that builds both UI and CLI', () => {
     expect(pkg.scripts.prepublishOnly).toBe('npm run visualizer:build && npm run build');
   });
+
+  it('marks the compiled CLI entry point as executable after building', () => {
+    expect(pkg.scripts.postbuild).toBe(
+      "node -e \"require('fs').chmodSync('dist/cli/index.js', 0o755)\""
+    );
+  });
 });

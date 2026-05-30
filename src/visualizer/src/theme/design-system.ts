@@ -161,12 +161,38 @@ export function createVisualizerTheme(mode: 'light' | 'dark'): Theme {
             height: 80,
           },
           '.provider-satellites': {
+            position: 'relative',
             gridColumn: '1 / -1',
             gridRow: 4,
             display: 'flex',
             justifyContent: 'center',
             flexWrap: 'wrap',
             gap: 24,
+          },
+          '.provider-satellites::before': {
+            content: '""',
+            position: 'absolute',
+            bottom: '100%',
+            left: '50%',
+            width: 1,
+            height: 80,
+            backgroundColor:
+              'color-mix(in srgb, var(--mui-palette-primary-main) 24%, var(--mui-palette-divider))',
+          },
+          '.provider-satellite-slot': {
+            position: 'relative',
+            zIndex: 1,
+          },
+          '.provider-satellite-slot::before': {
+            content: '""',
+            position: 'absolute',
+            zIndex: -1,
+            bottom: '100%',
+            left: '50%',
+            width: 1,
+            height: 80,
+            backgroundColor:
+              'color-mix(in srgb, var(--mui-palette-primary-main) 24%, var(--mui-palette-divider))',
           },
           '.provider-card': {
             position: 'relative',

@@ -1,6 +1,6 @@
 {
   "name": "@untitled-devs/wasla",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Universal synchronization layer for AI agent orchestrators",
   "type": "module",
   "main": "dist/cli/index.js",
@@ -14,6 +14,7 @@
   "scripts": {
     "prepublishOnly": "npm run visualizer:build && npm run build",
     "build": "npm run check && node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && tsc",
+    "postbuild": "node -e \"require('fs').chmodSync('dist/cli/index.js', 0o755)\"",
     "dev": "tsc --watch",
     "start": "node dist/cli/index.js",
     "sync": "npm run build && node dist/cli/index.js sync --scope workspace",

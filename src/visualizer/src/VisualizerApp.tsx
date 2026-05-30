@@ -250,11 +250,9 @@ function Workspace({
         {providers.length > orbitPositions.length ? (
           <Stack direction="row" className="provider-satellites">
             {providers.slice(orbitPositions.length).map((provider) => (
-              <ProviderCard
-                key={provider.id}
-                data={cardData(provider, attachedByProvider)}
-                {...handlers}
-              />
+              <Box key={provider.id} className="provider-satellite-slot">
+                <ProviderCard data={cardData(provider, attachedByProvider)} {...handlers} />
+              </Box>
             ))}
           </Stack>
         ) : null}

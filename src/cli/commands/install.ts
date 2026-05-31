@@ -1,16 +1,19 @@
 import { section, success, error, highlight, spacer } from '../../utils/cli-output.js';
-import { getRegistryDir } from '../../utils/paths.js';
-import { ensureDir } from '../../utils/fs.js';
+import { readConfiguredScope } from '../../utils/config.js';
 
 export async function installCommand(): Promise<void> {
   try {
     section('Preparing WaslaGenie CLI...');
     spacer();
 
-    // Ensure registry directory exists
-    await ensureDir(getRegistryDir('user'));
-
-    success('Registry directory ready');
+    const scope = await readConfiguredScope();
+    if (scope) {
+      success(`Scope configured: ${scope}`);
+    } else {
+      console.log('Choose a scope before running sync:');
+      console.log('  waslagenie config --scope user');
+      console.log('  waslagenie config --scope workspace');
+    }
 
     spacer();
     highlight('CLI setup complete!');

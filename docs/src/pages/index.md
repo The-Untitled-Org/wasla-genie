@@ -127,15 +127,18 @@ The same pattern applies across every asset type:
 WaslaGenie is cross-platform via `npx` — no global install required:
 
 ```bash
-npx wasla-genie sync
+npx @untitled-devs/wasla config --scope workspace
+npx @untitled-devs/wasla sync
 ```
 
-This runs the CLI directly. It does not register helper skills inside Claude, Gemini, or other tools.
+Choose `workspace` or `user` once before running operational commands. This runs the CLI directly.
+It does not register helper skills inside Claude, Gemini, or other tools.
 
 **Or install globally:**
 
 ```bash
-npm install -g wasla-genie
+npm install -g @untitled-devs/wasla
+waslagenie config --scope workspace
 waslagenie sync
 ```
 
@@ -196,13 +199,17 @@ No restart. No manual trigger. The moment something is created — it's everywhe
 
 ### Scope — workspace or user level
 
-```bash
-# Sync only within current project workspace
-waslagenie sync --scope workspace
+Choose the active scope before running sync, watch, status, or the visualizer:
 
-# Sync across your entire user space (default)
-waslagenie sync --scope user
+```bash
+# Use the current project workspace registry
+waslagenie config --scope workspace
+
+# Use the user-level registry across projects
+waslagenie config --scope user
 ```
+
+All other commands use the saved scope automatically. They do not accept `--scope`.
 
 ---
 
@@ -241,22 +248,19 @@ review-pr          command    openclaw    claude ✔  gemini ✔  codex ✔  her
 
 ## 🗃️ Registry Storage
 
-WaslaGenie keeps its own state separately from all orchestrators. You choose the scope at install time:
+WaslaGenie keeps its own state separately from all orchestrators. You choose the active scope explicitly before the first sync:
 
-**User-level** (default — available across all your projects):
+**User-level** (available across all your projects):
 ```
 ~/.waslagenie/
-├── registry.json     ← every discovered asset + origin tool + stub locations
-├── stubs/            ← log of every stub written and when
-└── config.json       ← your scope and preferences
+├── registry.json     ← user-scope assets and stub locations
+└── config.json       ← active scope preference
 ```
 
 **Workspace-level** (scoped to current project only):
 ```
 .waslagenie/
-├── registry.json
-├── stubs/
-└── config.json
+└── registry.json     ← workspace-scope assets and stub locations
 ```
 
 Switch anytime:

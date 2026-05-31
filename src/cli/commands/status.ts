@@ -1,15 +1,13 @@
 import { RegistryManager } from '../../core/registry.js';
-import { section, error, spacer, table } from '../../utils/cli-output.js';
+import { Scanner } from '../../core/scanner.js';
+import { assetList, section, error, info, metric, spacer } from '../../utils/cli-output.js';
 import { fileExists } from '../../utils/fs.js';
 import { getRegistryPath } from '../../utils/paths.js';
+import { requireConfiguredScope } from '../../utils/config.js';
 
-interface StatusOptions {
-  scope?: string;
-}
-
-export async function statusCommand(options: StatusOptions): Promise<void> {
+export async function statusCommand(): Promise<void> {
   try {
-    const scope = (options.scope || 'workspace') as 'user' | 'workspace';
+    const scope = await requireConfiguredScope();
     const registryPath = getRegistryPath(scope);
 
     if (!(await fileExists(registryPath))) {
@@ -21,29 +19,25 @@ export async function statusCommand(options: StatusOptions): Promise<void> {
     await registry.load();
 
     const registryData = registry.get();
+    const installedTools = await new Scanner(scope).detectInstalledTools();
+
+    section('Registry status');
+    info(`Scope: ${scope}`);
+    info(`Registry: ${registryPath}`);
+    spacer();
+    metric('Assets', registryData.assets.length);
+    metric('Conflicts', registryData.conflicts.length);
 
     if (registryData.assets.length === 0) {
+      spacer();
       section('No assets synced yet');
       spacer();
       return;
     }
 
-    section('Synced Assets');
+    section('Synced assets');
     spacer();
-
-    const rows = registryData.assets.map((asset) => [
-      asset.name,
-      asset.type,
-      asset.stubs.map((s) => s.tool).join(', ') || 'none',
-      new Date(asset.last_modified_at).toLocaleString(),
-    ]);
-
-    table(
-      [['ASSET', 'TYPE', 'STUBS', 'LAST MODIFIED'], ...rows.map((row) => row.map(String))],
-      [20, 8, 20, 24]
-    );
-
-    spacer();
+    assetList(registryData.assets, true, installedTools);
   } catch (err) {
     error(`Status check failed: ${err}`);
     process.exit(1);

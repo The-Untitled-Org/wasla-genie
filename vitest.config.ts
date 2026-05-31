@@ -32,7 +32,14 @@ export default defineConfig({
         '**/*.d.ts',
         'src/cli/index.ts',
         'src/cli/commands/**',
+        'src/visualizer/**',
       ],
+      thresholds: {
+        statements: 80,
+        branches: 80,
+        functions: 80,
+        lines: 80,
+      },
     },
   },
 });

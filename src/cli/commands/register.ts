@@ -2,6 +2,7 @@ import { getInstalledAdapters } from '../../adapters/factory.js';
 import { section, success, error, warning, highlight, spacer } from '../../utils/cli-output.js';
 import { getRegistryDir } from '../../utils/paths.js';
 import { ensureDir } from '../../utils/fs.js';
+import { requireConfiguredScope } from '../../utils/config.js';
 
 interface RegisterOptions {
   to?: string;
@@ -12,7 +13,8 @@ export async function registerCommand(options: RegisterOptions = {}): Promise<vo
     section('Detecting installed orchestrators...');
     spacer();
 
-    const adapters = await getInstalledAdapters();
+    const scope = await requireConfiguredScope();
+    const adapters = await getInstalledAdapters(scope);
 
     if (adapters.length === 0) {
       error('No supported orchestrators found');
@@ -50,7 +52,7 @@ export async function registerCommand(options: RegisterOptions = {}): Promise<vo
     section('Registering WaslaGenie helper skills...');
     spacer();
 
-    await ensureDir(getRegistryDir('user'));
+    await ensureDir(getRegistryDir(scope));
 
     for (const adapter of targets) {
       try {

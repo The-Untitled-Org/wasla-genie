@@ -1,48 +1,109 @@
 ---
-sidebar_position: 6
+sidebar_position: 5
 ---
 
 # Writing an Adapter
 
-WaslaGenie uses an adapter pattern to support different AI orchestrators. Each tool needs an adapter that knows:
+Adapters isolate provider-specific paths and formats from the synchronization engine. Add adapters under `src/adapters/` and register them in `src/adapters/factory.ts`.
 
-1. Where configuration directories live
-2. What asset types it supports
-3. How to write stub files in its native format
-4. How to install WaslaGenie as a native skill
+## Adapter Boundary
 
-## Adapter Interface
+```mermaid
+flowchart LR
+    Core["Scanner and Syncer"]
+    Adapter["WaslaGenieAdapter"]
+    Paths["paths<br/>Native asset locations"]
+    Formats["formats<br/>Native file formats"]
+    Detect["isInstalled()<br/>Scoped provider detection"]
+    Import["mcpFromNative()<br/>Native MCP to portable MCP"]
+    Export["mcpToNative()<br/>Portable MCP to native MCP"]
+    Write["writeStub()<br/>Write mirrored content"]
+    Install["installSkill()<br/>Optional helper registration"]
+
+    Core --> Adapter
+    Adapter --> Paths
+    Adapter --> Formats
+    Adapter --> Detect
+    Adapter --> Import
+    Adapter --> Export
+    Adapter --> Write
+    Adapter --> Install
+```
+
+The current interface lives in `src/core/types.ts`:
 
 ```typescript
 export interface WaslaGenieAdapter {
   name: string;
-  configDir: string;
-  supportedAssets: AssetType[];
-  
-  readAsset(assetPath: string): Promise<Asset>;
-  writeStub(stub: Stub): Promise<void>;
+  displayName: string;
+  paths: {
+    agent?: string;
+    skill?: string;
+    mcp?: string;
+    context?: string;
+  };
+  formats: {
+    agent?: AssetFormat;
+    skill?: AssetFormat;
+    mcp?: AssetFormat;
+    context?: AssetFormat;
+  };
+  mcpKey: string;
+  contextFile: string;
+  skillDirs: string[];
+  isInstalled(): Promise<boolean>;
+  mcpFromNative(server: Record<string, unknown>): Record<string, unknown>;
+  mcpToNative(server: Record<string, unknown>): Record<string, unknown>;
+  writeStub(asset: Asset, content: string, targetPath: string): Promise<void>;
   installSkill(): Promise<void>;
+  getRootConfigAppend(): string | null;
 }
 ```
 
-## Implementing an Adapter
+## Implementation Steps
 
-1. Create a new adapter file in `src/architecture/adapters/`
-2. Implement the `WaslaGenieAdapter` interface
-3. Define tool-specific paths and formats
-4. Handle stub writing in the tool's native format
-5. Register the adapter in the factory
+1. Create `src/adapters/<provider>.ts`.
+2. Extend `BaseAdapter`.
+3. Resolve paths for both `workspace` and `user` scope.
+4. Return `undefined` for unsupported asset types.
+5. Implement `isInstalled()` using native provider markers.
+6. Add MCP transformations when the provider JSON shape differs from the portable shape.
+7. Register the adapter in `src/adapters/factory.ts`.
+8. Add path, detection, write, and cross-sync tests.
+9. Document provider support under `docs/docs/providers/`.
 
-## Example: Adding Support for a New Tool
+## MCP Translation Example
 
-See the existing adapters (Claude Code, Gemini CLI, OpenCode) for implementation examples in `src/architecture/adapters/`.
+Core logic works with a portable MCP entry:
 
-## Stub Formats
+```json
+{
+  "command": "node",
+  "args": ["server.js"]
+}
+```
 
-Different tools may require different stub formats:
+A provider adapter may transform that into its required native shape:
 
-- **Markdown-based tools**: Use frontmatter + stub marker
-- **JSON-based tools**: Use JSON with stub metadata
-- **Custom formats**: Adapt to the tool's native format
+```json
+{
+  "type": "stdio",
+  "command": "node",
+  "args": ["server.js"]
+}
+```
 
-For more information, see [How Stubs Work](./how-stubs-work.md).
+This keeps provider conditionals out of the `Syncer`.
+
+## Supported Asset Types
+
+Adapters may support any subset of:
+
+| Type | Purpose |
+| --- | --- |
+| `agent` | Reusable agent instructions. |
+| `skill` | Skill directories or skill markdown files. |
+| `mcp` | One named MCP server entry from a native JSON config. |
+| `context` | Root-level provider instruction file. |
+
+Unsupported types must remain `undefined` in `paths` and `formats`. The sync engine skips them.

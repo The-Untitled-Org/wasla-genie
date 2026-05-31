@@ -1,81 +1,79 @@
-import { RegistryManager } from '../../core/registry.js';
 import { section, success, error, spacer, info } from '../../utils/cli-output.js';
-import { getRegistryPath } from '../../utils/paths.js';
-import { fileExists } from '../../utils/fs.js';
+import prompts from 'prompts';
+import {
+  getConfigPath,
+  getConfiguredRegistryPath,
+  readConfiguredScope,
+  writeConfiguredScope,
+  type WaslaScope,
+} from '../../utils/config.js';
 
 interface ConfigOptions {
   scope?: string;
   show?: boolean;
 }
 
-export async function configCommand(options: ConfigOptions): Promise<void> {
+export async function configCommand(options: ConfigOptions): Promise<boolean> {
   try {
-    // Determine current scope
-    const userPath = getRegistryPath('user');
-    const workspacePath = getRegistryPath('workspace');
-
-    const userExists = await fileExists(userPath);
-    const workspaceExists = await fileExists(workspacePath);
-
-    let currentScope: 'user' | 'workspace' = 'user';
-    if (workspaceExists && !userExists) {
-      currentScope = 'workspace';
-    }
+    const currentScope = await readConfiguredScope();
 
     // Show current config
     if (options.show) {
       section('Current Configuration');
       spacer();
-      info(`Scope: ${currentScope}`);
-      info(`Registry: ${getRegistryPath(currentScope)}`);
+      showConfig(currentScope);
       spacer();
-      return;
+      return true;
     }
 
     // Change scope if requested
     if (options.scope) {
-      const newScope = options.scope as 'user' | 'workspace';
+      const newScope = options.scope as WaslaScope;
 
       if (newScope !== 'user' && newScope !== 'workspace') {
         error('Invalid scope. Use: user or workspace');
         process.exit(1);
       }
 
-      const registry = new RegistryManager(currentScope);
-
-      // Load existing registry if it exists, otherwise it will be created on first sync
-      if (
-        (currentScope === 'user' && userExists) ||
-        (currentScope === 'workspace' && workspaceExists)
-      ) {
-        await registry.load();
-      } else {
-        // Create empty registry
-        await registry.load();
-      }
-
-      // Change scope and save
-      registry.setScope(newScope);
-      await registry.save();
-
-      success(`Scope changed to: ${newScope}`);
-      info(`Registry: ${getRegistryPath(newScope)}`);
-      spacer();
-      return;
+      await saveScope(newScope);
+      return true;
     }
 
-    // If no option provided, show current config
-    section('Current Configuration');
+    section('Configure Scope');
     spacer();
-    info(`Scope: ${currentScope}`);
-    info(`Registry: ${getRegistryPath(currentScope)}`);
-    spacer();
-    console.log('Usage:');
-    console.log('  waslagenie config --scope user       # Store registry in ~/.waslagenie/');
-    console.log('  waslagenie config --scope workspace  # Store registry in .waslagenie/');
-    console.log('  waslagenie config --show             # Show current config');
+    const response = await prompts<string>({
+      type: 'select',
+      name: 'scope' as const,
+      message: 'Where should WaslaGenie store and sync assets?',
+      choices: [
+        { title: 'Workspace - current project only', value: 'workspace' },
+        { title: 'User - available across all projects', value: 'user' },
+      ],
+      initial: currentScope === 'user' ? 1 : 0,
+    });
+    const scope = response.scope as WaslaScope | undefined;
+    if (!scope) {
+      info('Configuration cancelled');
+      return false;
+    }
+    await saveScope(scope);
+    return true;
   } catch (err) {
     error(`Config failed: ${err}`);
     process.exit(1);
   }
+}
+
+async function saveScope(scope: WaslaScope): Promise<void> {
+  await writeConfiguredScope(scope);
+  success(`Scope changed to: ${scope}`);
+  info(`Config: ${getConfigPath()}`);
+  info(`Registry: ${getConfiguredRegistryPath(scope)}`);
+  spacer();
+}
+
+function showConfig(scope: WaslaScope | null): void {
+  info(`Scope: ${scope ?? 'not configured'}`);
+  info(`Config: ${getConfigPath()}`);
+  if (scope) info(`Registry: ${getConfiguredRegistryPath(scope)}`);
 }

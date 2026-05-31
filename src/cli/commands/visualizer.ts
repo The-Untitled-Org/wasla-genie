@@ -10,6 +10,7 @@ import { RegistryManager } from '../../core/registry.js';
 import { getInstalledAdapters } from '../../adapters/factory.js';
 import { error, highlight, info, section, spacer } from '../../utils/cli-output.js';
 import { Syncer } from '../../syncer/index.js';
+import { requireConfiguredScope } from '../../utils/config.js';
 import type {
   VisualizerConfiguration,
   VisualizerEntity,
@@ -21,7 +22,6 @@ export function resolveVisualizerDist(moduleUrl: string): string {
 }
 
 interface VisualizerOptions {
-  scope?: string;
   port?: string;
   host?: string;
   noOpen?: boolean;
@@ -163,7 +163,7 @@ function sendJson(res: ServerResponse, statusCode: number, body: unknown): void 
 
 export async function visualizerCommand(options: VisualizerOptions): Promise<void> {
   try {
-    const scope = (options.scope || 'workspace') as 'user' | 'workspace';
+    const scope = await requireConfiguredScope();
     const host = options.host || '127.0.0.1';
     const port = Number(options.port || 4072);
     const shouldOpen = options.noOpen !== true;

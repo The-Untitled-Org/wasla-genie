@@ -9,6 +9,7 @@ Welcome to WaslaGenie — the universal synchronization layer for AI agent orche
 ## Quick Links
 
 - **[Project Specification](/specs/project-spec)** — Complete product specification and design
+- **[Architecture Overview](/architecture/)** — Runtime components, diagrams, and synchronization flow
 - **[Design Discussion](/discussions/ai-discussions)** — Deep-dive design decisions and rationale
 - **[Meetings of Mind](/discussions/MoM)** — Meeting notes from the design process
 
@@ -27,15 +28,15 @@ WaslaGenie scans each tool, discovers what you've built, and mirrors the content
 ## Quick Start
 
 ```bash
-npx wasla-genie sync         # Run directly without global install
-npm install -g wasla-genie   # Optional: install the CLI executable
-waslagenie sync              # Scan, discover, and mirror assets
-waslagenie register          # Optional: add helper skills to AI tools
+npm install -g @untitled-devs/wasla  # Install the CLI executable
+waslagenie sync                       # Choose scope, scan, discover, and mirror assets
+waslagenie status                     # Inspect assets grouped by type and provider
+waslagenie register                   # Optional: add helper skills to AI tools
 ```
 
 ## Key Features
 
-- ✅ **Multi-tool support** — Claude Code, Gemini CLI, OpenClaw
+- ✅ **Multi-tool support** — Provider adapters for Claude Code, Gemini CLI, GitHub Copilot, GitHub Copilot CLI, Cursor, OpenCode, and experimental OpenClaw support
 - ✅ **Content Mirroring** — Stubs contain full content for maximum tool compatibility
 - ✅ **Dynamic Source Discovery** — Latest modification wins
 - ✅ **Zero friction** — Edit anywhere, sync everywhere
@@ -46,6 +47,7 @@ waslagenie register          # Optional: add helper skills to AI tools
 This documentation contains:
 
 - **[Project Specification](/specs/project-spec)** — MVP specification, architecture, and design
+- **[Architecture Overview](/architecture/)** — Current components and data flow
 - **[Design Discussion](/discussions/ai-discussions)** — Grilling session notes and decision rationale
 - **[Meetings of Mind](/discussions/MoM)** — Meeting notes (MoM) with key decisions
 

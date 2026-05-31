@@ -4,25 +4,78 @@ sidebar_position: 1
 
 # Architecture Overview
 
-WaslaGenie is designed to be a lightweight, tool-agnostic synchronization layer for AI agents and MCPs. Its architecture prioritizes simplicity, local-first execution, and seamless integration with existing AI orchestrators.
+WaslaGenie is a local-first synchronization engine for AI tool assets. It discovers assets in the active providers, selects the latest source, mirrors content into the other active providers, and records the result in a scoped registry.
+
+There is no server and no remote database. The CLI operates on files already used by Claude Code, Gemini CLI, GitHub Copilot, GitHub Copilot CLI, Cursor, OpenCode, and the experimental OpenClaw adapter.
+
+## System Map
+
+```mermaid
+flowchart TD
+    CLI["waslagenie CLI<br/>sync | sync-to | status | watch | register"]
+    Scope["Scope configuration<br/>workspace | user"]
+    Scanner["Scanner<br/>Detect active providers<br/>Discover native assets<br/>Ignore known mirrors as sources"]
+    Syncer["Syncer<br/>Group by name and type<br/>Select latest source<br/>Reconcile deletions<br/>Mirror content"]
+    Registry["Scoped registry and canonical cache<br/>.waslagenie/ or ~/.waslagenie/"]
+    Adapters["Provider adapters<br/>Claude | Gemini | Copilot | Cursor | OpenCode | OpenClaw"]
+
+    CLI --> Scope
+    Scope --> Scanner
+    Scanner --> Syncer
+    Syncer --> Registry
+    Syncer --> Adapters
+    Adapters --> Scanner
+```
 
 ## Core Components
 
-The system is composed of several key layers:
+| Component | Location | Responsibility |
+| --- | --- | --- |
+| CLI commands | `src/cli/commands/` | Validate command input, ask for scope where needed, and render terminal output. |
+| Scope utilities | `src/utils/config.ts`, `src/utils/paths.ts` | Resolve the selected scope, registry location, and provider markers. |
+| Scanner | `src/core/scanner.ts` | Detect active providers and discover native files or structured MCP entries. |
+| Syncer | `src/syncer/index.ts` | Select sources, mirror assets, reconcile deletions, and update tracking metadata. |
+| Registry | `src/core/registry.ts` | Persist asset metadata, hashes, mirror locations, and conflicts as JSON. |
+| Adapters | `src/adapters/` | Translate generic asset operations into provider-specific paths and formats. |
+| Visualizer | `src/visualizer/` | Present registry state in a browser UI without changing sync semantics. |
 
-1. **Adapters**: Tool-specific implementations (Claude, Gemini, OpenClaw) that handle the reading and writing of assets in their native formats.
-2. **Scanner**: Discovers assets across all installed tools and identifies their state (original vs. stub).
-3. **Registry**: A local JSON store that tracks synchronized assets, their hashes, and synchronization history.
-4. **Syncer**: The orchestration engine that implements the "Latest is Greatest" strategy to keep all tools in sync.
+## Asset Model
 
-## Design Philosophy
+An asset is identified by its `name` and `type`.
 
-- **Zero Global State**: No central server is required. All data stays in your project or user directory.
-- **Content Mirroring**: Ensuring that AI tools see the full content of assets without needing complex import/export logic.
-- **Dynamic Source Discovery**: The source of truth is always the version you modified most recently.
+```mermaid
+classDiagram
+    class Asset {
+      +string id
+      +string name
+      +AssetType type
+      +number last_modified_at
+      +string last_synced_at
+      +Stub[] stubs
+    }
+    class Stub {
+      +string tool
+      +string path
+      +string written_at
+      +string hash
+    }
+    Asset "1" *-- "0..*" Stub
+```
 
-## Detailed Architecture
+The registry calls mirrored targets `stubs`, but the target files contain usable content. They are not pointers. MCP assets are stored as individual registry entries even when the provider stores multiple MCP servers in one JSON file.
 
-Explore the sub-sections for deeper dives:
-- **[How Stubs Work](./how-stubs-work.md)**: Deep dive into the Content Mirroring strategy.
-- **[Adapters](./adapters.md)**: Details on tool-specific integration.
+## Design Rules
+
+1. **Scope is explicit.** Workspace and user registries are separate.
+2. **Native files remain usable.** Tools do not need a WaslaGenie runtime to read mirrored assets.
+3. **The latest edit wins.** The file with the newest modification time becomes the source during a general sync.
+4. **Adapters own provider differences.** Core synchronization logic does not hardcode provider file layouts.
+5. **The registry tracks managed mirrors.** Hashes and paths allow deletion reconciliation without deleting unrelated user files.
+
+## Read Next
+
+- [Synchronization Flow](./synchronization-flow.md)
+- [Scopes and Registry](./scopes-and-registry.md)
+- [How Mirroring Works](./how-stubs-work.md)
+- [Writing an Adapter](./adapters.md)
+- [Provider Mapping](./orchestrator-comparison.mdx)

@@ -83,7 +83,6 @@ export interface DiscoveredFile {
 
 // CLI types
 export interface SyncOptions {
-  scope?: 'user' | 'workspace';
   interactive?: boolean;
 }
 

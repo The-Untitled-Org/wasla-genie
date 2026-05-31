@@ -2,24 +2,22 @@ import { RegistryManager } from '../../core/registry.js';
 import { Scanner } from '../../core/scanner.js';
 import { Syncer } from '../../syncer/index.js';
 import { section, error, highlight, spacer } from '../../utils/cli-output.js';
+import { requireConfiguredScope } from '../../utils/config.js';
 
 interface SyncToOptions {
-  scope?: string;
   from?: string;
   to?: string;
 }
 
 export async function syncToCommand(options: SyncToOptions): Promise<void> {
   try {
-    const scope = (options.scope || 'workspace') as 'user' | 'workspace';
+    const scope = await requireConfiguredScope();
     const from = options.from;
     const to = options.to;
 
     if (!from || !to) {
       error('Error: --from and --to are required');
-      console.log(
-        'Usage: waslagenie sync-to --from <source> --to <target> [--scope workspace|user]'
-      );
+      console.log('Usage: waslagenie sync-to --from <source> --to <target>');
       console.log('Example: waslagenie sync-to --from gemini --to claude');
       process.exit(1);
     }

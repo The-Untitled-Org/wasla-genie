@@ -1,42 +1,78 @@
 ---
-sidebar_position: 5
+sidebar_position: 4
 ---
 
-# How Stubs Work
+# How Mirroring Works
 
-WaslaGenie synchronizes assets by writing **stubs** into the target tools. A stub is a minimal valid file in the native format of the target tool that mirrors the content of the original asset.
+WaslaGenie mirrors full asset content into each active provider's native location. The registry calls these managed targets `stubs`, but they are usable native files or JSON entries, not references.
 
-## Content Mirroring (Option B)
+## Why Mirror Content?
 
-For the MVP, WaslaGenie uses **Content Mirroring** as the exclusive synchronization strategy. 
+AI tools do not share one import mechanism. A provider must be able to load an asset even when WaslaGenie is not running. Full-content mirroring satisfies that requirement and keeps provider behavior predictable.
 
-Research revealed that current AI orchestrators (Claude Code, Gemini CLI, OpenClaw) do not support native path references or imports in their agent/MCP definition files. To ensure the tool can load the asset without any awareness of WaslaGenie, we mirror the full content into the tool's expected directory.
+## File Assets
 
-### How it works:
-1. **Discover**: WaslaGenie scans all tool directories.
-2. **Identify Source**: The version with the latest modification time (`mtime`) is identified as the current source of truth.
-3. **Mirror**: WaslaGenie writes the content of the source file into all other tool locations.
-4. **Metadata**: Each stub includes a WaslaGenie metadata header (as frontmatter or comments) to identify it as a managed file.
+Agents, skills, and context files are written to the location defined by the target adapter.
 
-## Source of Truth: Latest is Greatest
+```mermaid
+flowchart TD
+    Source[".gemini/skills/reviewer/SKILL.md<br/>Latest source"]
+    Syncer["Syncer<br/>Select and hash content"]
+    Claude[".claude/skills/reviewer/SKILL.md"]
+    Copilot[".github/skills/reviewer/SKILL.md"]
 
-WaslaGenie does not enforce permanent ownership. Instead, it uses a **"Latest is Greatest"** strategy:
-- Whichever tool you used to edit the asset most recently becomes the temporary source of truth.
-- On the next sync, that version is mirrored to all other tools.
-
-## Example Stub
-
-**Claude Code Stub (`~/.claude/agents/researcher.md`):**
-```markdown
----
-waslagenie: true
-synced_at: 2026-05-16T14:32:01Z
----
-
-# researcher
-You are a researcher agent. Your job is to...
-[Full content mirrored from the latest version]
+    Source --> Syncer
+    Syncer --> Claude
+    Syncer --> Copilot
 ```
 
-## Why not native references?
-While native references (Option A) are cleaner, they are not yet supported by the tools in our MVP scope. We maintain the flexibility in our architecture to adopt native references if tool support is added in the future.
+Directory-based skills keep supporting files alongside `SKILL.md`.
+
+## MCP Assets
+
+MCP servers require structured updates. WaslaGenie parses the provider JSON document, modifies only the named MCP server entry, and writes the JSON document back.
+
+```mermaid
+flowchart TD
+    Claude[".claude/mcp.json<br/>mcpServers.workspace-files"]
+    Portable["Portable MCP representation"]
+    Gemini[".gemini/settings.json<br/>mcpServers"]
+    Copilot[".vscode/mcp.json<br/>servers"]
+
+    Claude --> Portable
+    Portable --> Gemini
+    Portable --> Copilot
+```
+
+Adapters convert between the portable MCP representation and each provider's native shape.
+
+## Tracking Metadata
+
+Tracking metadata is stored in the scoped registry rather than inserted into user content.
+
+```json
+{
+  "name": "reviewer",
+  "type": "skill",
+  "stubs": [
+    {
+      "tool": "claude",
+      "path": "/project/.claude/skills/reviewer/SKILL.md",
+      "written_at": "2026-05-31T00:00:00.000Z",
+      "hash": "..."
+    }
+  ]
+}
+```
+
+Hashes let WaslaGenie distinguish a managed mirror from a mirror that the user edited after synchronization.
+
+## Deletion Reconciliation
+
+When a managed file disappears, WaslaGenie checks surviving mirrors:
+
+1. If a surviving mirror was edited, it is preserved and can become the source.
+2. If no surviving mirror changed, managed copies and the canonical cache entry are removed.
+3. Files that are not tracked by the registry are never removed by reconciliation.
+
+This keeps deletion behavior conservative.

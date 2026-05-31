@@ -23,6 +23,7 @@ import { tmpdir } from 'os';
 import { mkdtemp, rm, utimes } from 'fs/promises';
 import type { Registry } from '@core/types';
 import * as pathUtils from '@utils/paths';
+import * as configUtils from '@utils/config';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -59,6 +60,8 @@ beforeEach(async () => {
     join(isolatedWorkspace, '.waslagenie', `${scope}-registry.json`)
   );
   vi.spyOn(pathUtils, 'getRegistryDir').mockReturnValue(join(isolatedWorkspace, '.waslagenie'));
+  vi.spyOn(configUtils, 'readConfiguredScope').mockResolvedValue('workspace');
+  vi.spyOn(configUtils, 'requireConfiguredScope').mockResolvedValue('workspace');
 });
 
 afterEach(async () => {
@@ -307,7 +310,7 @@ describe('Sync — bootstrap installed adapter that has no agents/ dir', () => {
     });
 
     // Run syncCommand
-    await syncCommand({ scope: 'workspace' });
+    await syncCommand({ promptForScope: false });
 
     // Registration is opt-in through `waslagenie register`.
     expect(await fileExists(agentsDir)).toBe(false);

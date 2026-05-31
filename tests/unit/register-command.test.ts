@@ -25,6 +25,10 @@ vi.mock('../../src/utils/paths.js', () => ({
   getRegistryDir: vi.fn(() => '/tmp/.waslagenie'),
 }));
 
+vi.mock('../../src/utils/config.js', () => ({
+  requireConfiguredScope: vi.fn(async () => 'workspace'),
+}));
+
 vi.mock('../../src/utils/cli-output.js', () => ({
   section: vi.fn(),
   success: vi.fn(),

@@ -229,6 +229,23 @@ describe('Scanner — grouping by name+type', () => {
   });
 });
 
+// ─── extractAssetName (Private, tested via scanTool indirectly or specifically) ──
+
+describe('Scanner.extractAssetName (via type logic)', () => {
+  it('correctly handles dot files and paths', async () => {
+    const scanner = new Scanner('workspace');
+    const extract = (scanner as any).extractAssetName.bind(scanner);
+
+    expect(extract('waslagenie/SKILL.md')).toBe('waslagenie');
+    expect(extract('waslagenie\\SKILL.md')).toBe('waslagenie');
+    expect(extract('researcher.md')).toBe('researcher');
+    expect(extract('my.cool.researcher.md')).toBe('my.cool.researcher');
+    expect(extract('no-extension')).toBe('no-extension');
+    expect(extract('nested/path.with.dots/file.md')).toBe('nested');
+    expect(extract('nested\\path.with.dots\\file.md')).toBe('nested');
+  });
+});
+
 // ─── scanTool & scanAllTools ──────────────────────────────────────────────────
 
 describe('Scanner.scanTool & scanAllTools', () => {

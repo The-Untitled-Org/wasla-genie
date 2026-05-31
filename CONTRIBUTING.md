@@ -185,6 +185,11 @@ src/
 
 This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
 
+## Community Standards
+
+- Read the [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
+- Report suspected vulnerabilities privately according to the [Security Policy](SECURITY.md).
+
 ---
 
 **Thanks for contributing to WaslaGenie!** 🎉

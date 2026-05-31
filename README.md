@@ -381,22 +381,17 @@ Nothing is forced. Centralization is a convenience, not a requirement.
 
 ```
 wasla-genie/
-├── src/
-│   ├── cli/              # CLI entry point and commands
-│   ├── scanner/          # Scans known tool config directories
-│   ├── registry/         # Builds and maintains the asset registry
-│   ├── syncer/           # Writes and tracks stub files
-│   ├── watcher/          # Daemon / filesystem watcher
-│   └── adapters/         # Per-tool directory knowledge + stub format
-│       ├── claude.js
-│       ├── gemini.js
-│       ├── codex.js
-│       ├── openclaw.js
-│       └── hermes.js
+├── apps/
+│   ├── cli/src/          # CLI commands and visualizer server
+│   └── visualizer/src/   # React visualizer
+├── packages/
+│   ├── adapters/src/     # Per-tool directory knowledge + stub format
+│   ├── core/src/         # Registry, scanner, and shared types
+│   ├── shared/src/       # Shared config, filesystem, and path helpers
+│   └── sync/src/         # Sync orchestration and filesystem watcher
+├── tests/
+├── scripts/
 ├── docs/
-│   ├── how-stubs-work.md
-│   ├── adapters.md
-│   └── roadmap.md
 ├── package.json
 └── README.md
 ```
@@ -421,6 +416,7 @@ Nothing is ever duplicated.
 git clone https://github.com/The-Untitled-Org/wasla-genie
 cd wasla-genie
 npm install
+npm run visualizer:install
 npm run dev
 ```
 

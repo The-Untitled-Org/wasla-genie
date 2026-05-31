@@ -14,7 +14,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Syncer } from '@syncer/index';
 import { RegistryManager } from '@core/registry';
-import { Scanner } from '@core/scanner';
+import { Scanner } from '@syncer/scanner';
 import { writeText, ensureDir, readText, fileExists } from '@utils/fs';
 import { join, resolve } from 'path';
 import { tmpdir } from 'os';

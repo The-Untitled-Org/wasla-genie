@@ -14,7 +14,7 @@ import {
   bulletPoint,
   code,
   banner,
-} from '@utils/cli-output';
+} from '@cli/cli-output';
 
 describe('cli-output utilities', () => {
   let consoleLogSpy: any;

@@ -16,7 +16,7 @@ git switch main
 git pull --ff-only
 git status
 npm ci
-npm --prefix src/visualizer ci
+npm --prefix apps/visualizer ci
 npm run check
 npm test -- --run
 ```

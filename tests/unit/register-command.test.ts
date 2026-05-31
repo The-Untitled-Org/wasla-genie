@@ -13,23 +13,23 @@ const installedAdapters = [
   },
 ];
 
-vi.mock('../../src/adapters/factory.js', () => ({
+vi.mock('#adapters/factory.js', () => ({
   getInstalledAdapters: vi.fn(async () => installedAdapters),
 }));
 
-vi.mock('../../src/utils/fs.js', () => ({
+vi.mock('#shared/fs.js', () => ({
   ensureDir: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../src/utils/paths.js', () => ({
+vi.mock('#shared/paths.js', () => ({
   getRegistryDir: vi.fn(() => '/tmp/.waslagenie'),
 }));
 
-vi.mock('../../src/utils/config.js', () => ({
+vi.mock('#shared/config.js', () => ({
   requireConfiguredScope: vi.fn(async () => 'workspace'),
 }));
 
-vi.mock('../../src/utils/cli-output.js', () => ({
+vi.mock('@cli/cli-output', () => ({
   section: vi.fn(),
   success: vi.fn(),
   error: vi.fn(),
@@ -38,8 +38,8 @@ vi.mock('../../src/utils/cli-output.js', () => ({
   spacer: vi.fn(),
 }));
 
-import { registerCommand } from '../../src/cli/commands/register.js';
-import { error } from '../../src/utils/cli-output.js';
+import { registerCommand } from '@cli/commands/register.js';
+import { error } from '@cli/cli-output';
 
 describe('registerCommand', () => {
   const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never);

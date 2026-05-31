@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Syncer } from '@syncer/index';
 import { RegistryManager } from '@core/registry';
-import { Scanner } from '@core/scanner';
+import { Scanner } from '@syncer/scanner';
 import { writeText, ensureDir, fileExists, readText } from '@utils/fs';
 import * as pathUtils from '@utils/paths';
 import { join } from 'path';

@@ -245,7 +245,7 @@ For each tool (Claude Code, Gemini CLI, OpenClaw):
    - Load/save asset change detection data
    - Compare hashes/mtimes
 
-3. **`src/syncer/index.ts`**
+3. **`packages/sync/src/index.ts`**
    - For each changed asset, find newest version
    - Mirror content to all other locations
    - Handle both file-write (agents) and JSON-patch (MCPs)
@@ -255,11 +255,11 @@ For each tool (Claude Code, Gemini CLI, OpenClaw):
    - Identify which assets changed
    - Rank by mtime to find "latest"
 
-5. **`src/cli/index.ts`**
+5. **`apps/cli/src/index.ts`**
    - Command router: `install`, `sync`, `status`, `config`
    - Output formatting
 
-6. **`src/utils/`**
+6. **`packages/shared/src/`**
    - `paths.ts` — path resolution, `~` expansion
    - `fs.ts` — safe file read/write helpers
    - `hash.ts` — compute file content hashes
@@ -268,27 +268,27 @@ For each tool (Claude Code, Gemini CLI, OpenClaw):
 
 **Files to create:**
 
-1. **`src/adapters/interface.ts`**
+1. **`packages/adapters/src/interface.ts`**
    - Base `WaslaGenieAdapter` interface
    - Methods: `isInstalled()`, `writeStub()`, `installSkill()`, `hashFile()`
 
-2. **`src/adapters/claude.ts`**
+2. **`packages/adapters/src/claude.ts`**
    - Discover: `~/.claude/agents/`, `~/.claude/mcp/`
    - Write stubs to both paths
    - Install skill via `CLAUDE.md` registration
 
-3. **`src/adapters/gemini.ts`**
+3. **`packages/adapters/src/gemini.ts`**
    - Discover: `~/.gemini/agents/`, `~/.gemini/settings.json`
    - Write agent stubs to agents dir
    - Write MCP stubs by JSON-patching `settings.json`
    - Install skill via `GEMINI.md` registration
 
-4. **`src/adapters/codex.ts`**
+4. **`packages/adapters/src/codex.ts`**
    - Discover: `~/.codex/agents/`, `~/.codex/mcp/` (TBD — needs research)
    - Write stubs (format TBD)
    - Install skill (mechanism TBD)
 
-5. **`src/adapters/openclaw.ts`**
+5. **`packages/adapters/src/openclaw.ts`**
    - Discover: `~/.openclaw/agents/`, `~/.openclaw/mcp/` (TBD — needs research)
    - Write stubs (format TBD)
    - Install skill (mechanism TBD)
@@ -302,7 +302,7 @@ For each tool (Claude Code, Gemini CLI, OpenClaw):
    - Runs `waslagenie sync --quick` on tool launch
    - Captures sync output/warnings
 
-2. **`src/cli/install.ts`**
+2. **`apps/cli/src/commands/install.ts`**
    - Register skill in each tool's config
    - For Claude: append to `CLAUDE.md`
    - For Gemini: append to `GEMINI.md`
@@ -355,7 +355,7 @@ MVP complete
 - ❌ Skills, commands, cron sync — agents + MCPs only
 - ❌ IDE-based agents (Cursor, GitHub Copilot) — different config model, deferred to v1.1
 - ❌ Hermes support — deferred to v1.1
-- ❌ GUI or web dashboard
+- ✅ Local visualizer dashboard (`waslagenie visualizer`)
 - ❌ Team collaboration — users handle sharing via git/etc.
 - ❌ Multi-profile support — single default profile
 - ❌ Remote/cross-machine sync — handled by export/import

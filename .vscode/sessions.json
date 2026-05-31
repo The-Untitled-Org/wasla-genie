@@ -24,7 +24,7 @@
         "color": "terminal.ansiMagenta",
         "commands": [
           "npm ci",
-          "npm --prefix src/visualizer ci",
+          "npm --prefix apps/visualizer ci",
           "npm --prefix docs ci"
         ]
       },
@@ -45,7 +45,6 @@
         "commands": [
           "npm run format",
           "npm run visualizer:install",
-          "npm run visualizer:build",
           "npm run docs:install",
           "npm run build",
           "npm run docs:build",

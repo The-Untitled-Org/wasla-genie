@@ -5,7 +5,7 @@
     "lib": ["ES2020"],
     "types": ["node"],
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -22,16 +22,13 @@
     "ignoreDeprecations": "5.0",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@core/*": ["src/core/*"],
-      "@adapters/*": ["src/adapters/*"],
-      "@syncer/*": ["src/syncer/*"],
-      "@cli/*": ["src/cli/*"],
-      "@daemon/*": ["src/daemon/*"],
-      "@utils/*": ["src/utils/*"],
-      "@types": ["src/core/types"]
+      "#adapters/*": ["packages/adapters/src/*"],
+      "#cli/*": ["apps/cli/src/*"],
+      "#core/*": ["packages/core/src/*"],
+      "#shared/*": ["packages/shared/src/*"],
+      "#sync/*": ["packages/sync/src/*"]
     }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests", "src/visualizer/**/*"]
+  "include": ["apps/cli/src/**/*.ts", "packages/**/*.ts"],
+  "exclude": ["node_modules", "dist", "tests", "apps/visualizer"]
 }

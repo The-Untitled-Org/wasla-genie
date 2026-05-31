@@ -18,7 +18,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Syncer } from '@syncer/index';
 import { RegistryManager } from '@core/registry';
-import { Scanner } from '@core/scanner';
+import { Scanner } from '@syncer/scanner';
 import { readText, writeText, fileExists, ensureDir } from '@utils/fs';
 import { ClaudeAdapter } from '@adapters/claude';
 import { GeminiAdapter } from '@adapters/gemini';

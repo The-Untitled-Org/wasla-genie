@@ -4,7 +4,7 @@ sidebar_position: 5
 
 # Writing an Adapter
 
-Adapters isolate provider-specific paths and formats from the synchronization engine. Add adapters under `src/adapters/` and register them in `src/adapters/factory.ts`.
+Adapters isolate provider-specific paths and formats from the synchronization engine. Add adapters under `packages/adapters/src/` and register them in `packages/adapters/src/factory.ts`.
 
 ## Adapter Boundary
 
@@ -30,7 +30,7 @@ flowchart LR
     Adapter --> Install
 ```
 
-The current interface lives in `src/core/types.ts`:
+The current interface lives in `packages/core/src/types.ts`:
 
 ```typescript
 export interface WaslaGenieAdapter {
@@ -62,13 +62,13 @@ export interface WaslaGenieAdapter {
 
 ## Implementation Steps
 
-1. Create `src/adapters/<provider>.ts`.
+1. Create `packages/adapters/src/<provider>.ts`.
 2. Extend `BaseAdapter`.
 3. Resolve paths for both `workspace` and `user` scope.
 4. Return `undefined` for unsupported asset types.
 5. Implement `isInstalled()` using native provider markers.
 6. Add MCP transformations when the provider JSON shape differs from the portable shape.
-7. Register the adapter in `src/adapters/factory.ts`.
+7. Register the adapter in `packages/adapters/src/factory.ts`.
 8. Add path, detection, write, and cross-sync tests.
 9. Document provider support under `docs/docs/providers/`.
 

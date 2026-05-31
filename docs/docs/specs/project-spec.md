@@ -613,7 +613,7 @@ wasla-genie/
 - ❌ Skills, commands, cron sync (agents + MCPs only)
 - ❌ IDE-based agents (Cursor, GitHub Copilot) — different config model, deferred to v1.1
 - ❌ Hermes support — deferred to v1.1
-- ❌ GUI or web dashboard
+- ✅ Local visualizer dashboard (`waslagenie visualizer`)
 - ❌ Team collaboration features (leave it to users to manage ~/.waslagenie/ with git)
 - ❌ Multi-profile support (single default profile only)
 - ❌ Remote or cross-machine sync (handled by export/import)

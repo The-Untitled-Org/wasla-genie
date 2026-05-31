@@ -117,7 +117,7 @@ describe('Feature Integration', () => {
 ### Mocking Registry
 
 ```typescript
-import { RegistryManager } from '../../src/core/registry';
+import { RegistryManager } from '@core/registry';
 
 const registry = new RegistryManager();
 registry.addAsset(mockAsset);
@@ -126,7 +126,7 @@ registry.addAsset(mockAsset);
 ### Mocking Scanner
 
 ```typescript
-import { Scanner } from '../../src/core/scanner';
+import { Scanner } from '@syncer/scanner';
 
 const scanner = new Scanner('workspace');
 const discovered = await scanner.scanAllTools();

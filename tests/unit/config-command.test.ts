@@ -9,7 +9,7 @@ vi.mock('prompts', () => ({
   default: promptsMock,
 }));
 
-vi.mock('../../src/utils/config.js', () => ({
+vi.mock('#shared/config.js', () => ({
   getConfigPath: vi.fn(() => '/home/test/.waslagenie/config.json'),
   getConfiguredRegistryPath: vi.fn((scope: string) =>
     scope === 'user'
@@ -20,7 +20,7 @@ vi.mock('../../src/utils/config.js', () => ({
   writeConfiguredScope: writeConfiguredScopeMock,
 }));
 
-vi.mock('../../src/utils/cli-output.js', () => ({
+vi.mock('@cli/cli-output', () => ({
   section: vi.fn(),
   success: vi.fn(),
   error: vi.fn(),
@@ -28,7 +28,7 @@ vi.mock('../../src/utils/cli-output.js', () => ({
   info: vi.fn(),
 }));
 
-import { configCommand } from '../../src/cli/commands/config.js';
+import { configCommand } from '@cli/commands/config.js';
 
 describe('configCommand', () => {
   beforeEach(() => {

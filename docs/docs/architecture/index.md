@@ -31,13 +31,13 @@ flowchart TD
 
 | Component | Location | Responsibility |
 | --- | --- | --- |
-| CLI commands | `src/cli/commands/` | Validate command input, ask for scope where needed, and render terminal output. |
-| Scope utilities | `src/utils/config.ts`, `src/utils/paths.ts` | Resolve the selected scope, registry location, and provider markers. |
-| Scanner | `src/core/scanner.ts` | Detect active providers and discover native files or structured MCP entries. |
-| Syncer | `src/syncer/index.ts` | Select sources, mirror assets, reconcile deletions, and update tracking metadata. |
-| Registry | `src/core/registry.ts` | Persist asset metadata, hashes, mirror locations, and conflicts as JSON. |
-| Adapters | `src/adapters/` | Translate generic asset operations into provider-specific paths and formats. |
-| Visualizer | `src/visualizer/` | Present registry state in a browser UI without changing sync semantics. |
+| CLI commands | `apps/cli/src/commands/` | Validate command input, ask for scope where needed, and render terminal output. |
+| Scope utilities | `packages/shared/src/config.ts`, `packages/shared/src/paths.ts` | Resolve the selected scope, registry location, and provider markers. |
+| Scanner | `packages/sync/src/scanner.ts` | Detect active providers and discover native files or structured MCP entries. |
+| Syncer | `packages/sync/src/index.ts` | Select sources, mirror assets, reconcile deletions, and update tracking metadata. |
+| Registry | `packages/core/src/registry.ts` | Persist asset metadata, hashes, mirror locations, and conflicts as JSON. |
+| Adapters | `packages/adapters/src/` | Translate generic asset operations into provider-specific paths and formats. |
+| Visualizer | `apps/visualizer/` | Present registry state in a browser UI without changing sync semantics. |
 
 ## Asset Model
 

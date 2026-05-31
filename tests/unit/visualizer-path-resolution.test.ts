@@ -14,21 +14,21 @@ function fakePkgUrl(suffix: string): string {
 
 describe('resolveVisualizerDist', () => {
   it('resolves the dist path relative to the module, not process.cwd()', async () => {
-    const { resolveVisualizerDist } = await import('../../src/cli/commands/visualizer.js');
-    const fakeModuleUrl = fakePkgUrl('dist/cli/commands/visualizer.js');
+    const { resolveVisualizerDist } = await import('@cli/server/visualizer-server.js');
+    const fakeModuleUrl = fakePkgUrl('dist/apps/cli/src/server/visualizer-server.js');
     const result = resolveVisualizerDist(fakeModuleUrl);
 
-    expect(result).toContain(join('src', 'visualizer', 'dist'));
+    expect(result).toContain(join('dist', 'visualizer'));
     expect(result).not.toContain(process.cwd());
-    expect(result).toContain(join('wasla-genie', 'src', 'visualizer', 'dist'));
+    expect(result).toContain(join('wasla-genie', 'dist', 'visualizer'));
   });
 
   it('produces a different path from process.cwd()-based resolution', async () => {
-    const { resolveVisualizerDist } = await import('../../src/cli/commands/visualizer.js');
-    const fakeModuleUrl = fakePkgUrl('dist/cli/commands/visualizer.js');
+    const { resolveVisualizerDist } = await import('@cli/server/visualizer-server.js');
+    const fakeModuleUrl = fakePkgUrl('dist/apps/cli/src/server/visualizer-server.js');
     const result = resolveVisualizerDist(fakeModuleUrl);
 
-    const cwdBased = join(process.cwd(), 'src/visualizer/dist');
+    const cwdBased = join(process.cwd(), 'dist/visualizer');
     expect(result).not.toBe(cwdBased);
   });
 });

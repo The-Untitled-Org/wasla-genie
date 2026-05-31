@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Scanner } from '@core/scanner';
+import { Scanner } from '@syncer/scanner';
 import type { DiscoveredFile } from '@core/types';
 import * as pathUtils from '@utils/paths';
 

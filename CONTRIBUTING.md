@@ -24,6 +24,7 @@ git clone https://github.com/The-Untitled-Org/wasla-genie.git
 cd wasla-genie
 
 npm install
+npm run visualizer:install
 npm run build
 ```
 
@@ -77,13 +78,13 @@ Use these in your imports for cleaner code:
 ```typescript
 // ✅ Good
 import { RegistryManager } from '@core/registry';
-import { Scanner } from '@core/scanner';
+import { Scanner } from '@syncer/scanner';
 import { getAdapter } from '@adapters/factory';
 import { writeText } from '@utils/fs';
 
 // ❌ Avoid
-import { RegistryManager } from '../../src/core/registry';
-import { Scanner } from '../../src/core/scanner';
+import { RegistryManager } from '@core/registry';
+import { Scanner } from '@syncer/scanner';
 ```
 
 ## 🧪 Testing
@@ -157,13 +158,14 @@ Found a bug? Have a feature request?
 ### Project Structure
 
 ```
-src/
-├── cli/                # Command-line interface
-├── core/               # Core logic (registry, scanner, types)
-├── adapters/           # Tool-specific adapters
-├── syncer/             # Sync orchestration
-├── daemon/             # File watcher
-└── utils/              # Utilities
+apps/
+├── cli/src/            # Command-line interface and visualizer server
+└── visualizer/src/     # React visualizer
+packages/
+├── adapters/src/       # Tool-specific adapters
+├── core/src/           # Core logic (registry, scanner, types)
+├── shared/src/         # Shared config, filesystem, and path helpers
+└── sync/src/           # Sync orchestration and file watcher
 ```
 
 ### Key Concepts

@@ -1,6 +1,6 @@
 {
   "name": "@untitled-devs/wasla",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Universal synchronization layer for AI agent orchestrators",
   "repository": {
     "type": "git",

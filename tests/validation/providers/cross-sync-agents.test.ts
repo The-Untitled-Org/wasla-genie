@@ -2,11 +2,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Syncer } from '@syncer/index';
 import { RegistryManager } from '@core/registry';
 import { Scanner } from '@syncer/scanner';
-import { writeText, ensureDir, fileExists, readText } from '@utils/fs';
+import { writeText, writeJSON, ensureDir, fileExists, readText } from '@utils/fs';
 import * as pathUtils from '@utils/paths';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { mkdtemp, rm, utimes } from 'fs/promises';
+import { createHash } from 'crypto';
 
 describe('Cross-Provider Sync: Skills', () => {
   let tmpBase: string;
@@ -116,8 +117,50 @@ describe('Cross-Provider Sync: Skills', () => {
 
     await syncer.syncToTool('gemini', ['claude']);
 
-    const claudeContext = join(tmpBase, '.claude', 'CLAUDE.md');
+    const claudeContext = join(tmpBase, 'CLAUDE.md');
     expect(await readText(claudeContext)).toBe(contextContent);
+    expect(await fileExists(join(tmpBase, '.claude', 'CLAUDE.md'))).toBe(false);
+  });
+
+  it('removes an unchanged legacy nested Claude context after migrating it to root', async () => {
+    const contextContent = '# Shared project context\n';
+    const legacyClaudeContext = join(tmpBase, '.claude', 'CLAUDE.md');
+    const registryPath = join(tmpBase, '.waslagenie', 'registry.json');
+    const contentHash = createHash('sha256').update(contextContent).digest('hex');
+    await writeText(join(tmpBase, 'GEMINI.md'), contextContent);
+    await writeText(legacyClaudeContext, contextContent);
+    await ensureDir(join(tmpBase, '.waslagenie'));
+    await writeJSON(registryPath, {
+      assets: [
+        {
+          id: 'legacy-context',
+          name: 'context',
+          type: 'context',
+          last_modified_at: Date.now(),
+          last_synced_at: new Date().toISOString(),
+          stubs: [
+            {
+              tool: 'claude',
+              path: legacyClaudeContext,
+              written_at: new Date().toISOString(),
+              hash: contentHash,
+            },
+          ],
+        },
+      ],
+      conflicts: [],
+      config: { scope: 'workspace', version: '0.1.0' },
+    });
+
+    const syncer = new Syncer(
+      new RegistryManager('workspace'),
+      new Scanner('workspace'),
+      'workspace'
+    );
+    await syncer.syncToTool('gemini', ['claude']);
+
+    expect(await readText(join(tmpBase, 'CLAUDE.md'))).toBe(contextContent);
+    expect(await fileExists(legacyClaudeContext)).toBe(false);
   });
 
   it('syncs a Claude custom agent to each provider native custom-agent surface', async () => {

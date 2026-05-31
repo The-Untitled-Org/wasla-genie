@@ -1,7 +1,7 @@
 import { BaseAdapter } from './base.js';
 import { Asset } from '#core/types.js';
 import { fileExists, writeText, ensureDir } from '#shared/fs.js';
-import { join } from 'path';
+import { dirname, join } from 'path';
 import { getToolMarkers } from '#shared/paths.js';
 
 export class ClaudeAdapter extends BaseAdapter {
@@ -16,6 +16,7 @@ export class ClaudeAdapter extends BaseAdapter {
 
   get paths() {
     const markers = getToolMarkers(this.scope);
+    const workspaceRoot = dirname(markers.claude);
     return {
       agent: join(markers.claude, 'agents'),
       skill: join(markers.claude, 'skills'),
@@ -23,7 +24,10 @@ export class ClaudeAdapter extends BaseAdapter {
         this.scope === 'workspace'
           ? join(markers.claude, 'mcp.json')
           : join(markers.claude, 'settings.json'),
-      context: join(markers.claude, 'CLAUDE.md'),
+      context:
+        this.scope === 'workspace'
+          ? join(workspaceRoot, 'CLAUDE.md')
+          : join(markers.claude, 'CLAUDE.md'),
     };
   }
 

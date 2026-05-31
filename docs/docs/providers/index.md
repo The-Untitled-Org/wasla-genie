@@ -14,7 +14,7 @@ This section provides detailed configuration guides for integrating WaslaGenie w
 
 | Provider | Agent Format | MCP Config | Skills/Instructions | Context File |
 |----------|-------------|------------|-------------------|--------------|
-| [Claude Code](./claude.md) | `.claude/agents/*.md` (YAML frontmatter) | `.claude/mcp.json` (`mcpServers`) | `.claude/skills/*/SKILL.md` | `.claude/CLAUDE.md` |
+| [Claude Code](./claude.md) | `.claude/agents/*.md` (YAML frontmatter) | `.claude/mcp.json` (`mcpServers`) | `.claude/skills/*/SKILL.md` | `CLAUDE.md` |
 | [Gemini CLI](./gemini.md) | `.gemini/agents/*.md` | `.gemini/settings.json` (`mcpServers`) | `.gemini/skills/*/SKILL.md` | `GEMINI.md` |
 | [OpenClaw](./openclaw.md) | Experimental: native contract still being verified | Experimental | Experimental | `AGENTS.md` |
 | [OpenCode](./opencode.md) | `.opencode/agents/*.md` | `opencode.json` (`mcp`) | `.opencode/skills/*/SKILL.md` | `AGENTS.md` |

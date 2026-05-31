@@ -14,7 +14,7 @@ Claude Code provides native project surfaces for subagents, Agent Skills, projec
 |-------|----------------|-----------|----------------|
 | Custom agent | `.claude/agents/<name>.md` | `~/.claude/agents/<name>.md` | Read and write as an `agent` |
 | Agent Skill | `.claude/skills/<name>/SKILL.md` | `~/.claude/skills/<name>/SKILL.md` | Read and write as a `skill` |
-| Project context | `.claude/CLAUDE.md` | `~/.claude/CLAUDE.md` | Read and write as `context` |
+| Project context | `CLAUDE.md` | `~/.claude/CLAUDE.md` | Read and write as `context` |
 | MCP servers | `.claude/mcp.json` | Claude user settings | Merge entries under `mcpServers` |
 
 ## Sync Mapping
@@ -23,7 +23,7 @@ Claude Code provides native project surfaces for subagents, Agent Skills, projec
 .gemini/agents/reviewer.md        -> .claude/agents/reviewer.md
 .gemini/skills/research/SKILL.md  -> .claude/skills/research/SKILL.md
 .gemini/settings.json:mcpServers  -> .claude/mcp.json:mcpServers
-GEMINI.md                         -> .claude/CLAUDE.md
+GEMINI.md                         -> CLAUDE.md
 ```
 
 Agent Markdown with shared YAML fields such as `name` and `description` can move directly. Claude-only permission, model, or tool configuration is not assumed portable to another provider.

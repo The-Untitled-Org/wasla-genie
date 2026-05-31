@@ -7,9 +7,14 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+
+
+## [0.1.3] - 2026-05-31
+
 ### Added
 
 - `60570d0` feat: add @docusaurus/theme-mermaid dependency and enhance assetList tests
+- `5c4d640` feat: enhance release workflow with changelog generation and validation
 
 ### Fixed
 

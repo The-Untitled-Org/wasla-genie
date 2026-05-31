@@ -6,6 +6,7 @@
     "type": "git",
     "url": "git+https://github.com/The-Untitled-Org/wasla-genie.git"
   },
+  "homepage": "https://the-untitled-org.github.io/wasla-genie/",
   "type": "module",
   "main": "dist/apps/cli/src/index.js",
   "bin": {

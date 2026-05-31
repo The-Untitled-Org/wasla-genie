@@ -111,6 +111,67 @@ describe('Syncer.sync — return shape', () => {
   });
 });
 
+describe('Syncer.sync — missing discovered files', () => {
+  it('skips an MCP source removed after scanning', async () => {
+    const registry = new RegistryManager('user');
+    const scanner = new Scanner('user');
+    const missingPath = join(
+      isolatedWorkspace,
+      '.waslagenie',
+      'mcp',
+      'io.github.github',
+      'github-mcp-server.json'
+    );
+    vi.spyOn(scanner, 'scanAllTools').mockResolvedValue([
+      {
+        name: 'io.github.github',
+        type: 'mcp',
+        relativePath: join('io.github.github', 'github-mcp-server.json'),
+        isStub: false,
+        path: missingPath,
+        modifiedAt: 5000,
+        tool: 'github-copilot',
+      },
+    ]);
+    vi.spyOn(scanner, 'detectInstalledTools').mockResolvedValue(['github-copilot']);
+
+    const syncer = new Syncer(registry, scanner, 'user');
+    await expect(syncer.sync(false)).resolves.toEqual({
+      stubsWritten: 0,
+      stubsDeleted: 0,
+      assetsDiscovered: 0,
+    });
+  });
+
+  it('re-throws non-ENOENT errors when reading files', async () => {
+    const registry = new RegistryManager('user');
+    const scanner = new Scanner('user');
+    const permissionErrorPath = join(isolatedWorkspace, 'permission-denied.json');
+
+    vi.spyOn(scanner, 'scanAllTools').mockResolvedValue([
+      {
+        name: 'test-agent',
+        type: 'agent',
+        relativePath: 'permission-denied.json',
+        isStub: false,
+        path: permissionErrorPath,
+        modifiedAt: 5000,
+        tool: 'claude',
+      },
+    ]);
+    vi.spyOn(scanner, 'detectInstalledTools').mockResolvedValue(['claude']);
+
+    const fsMock = vi.mocked(await import('@utils/fs'));
+    // Mock readText to throw a permission error (not ENOENT)
+    vi.spyOn(fsMock, 'readText').mockRejectedValueOnce(
+      Object.assign(new Error('Permission denied'), { code: 'EACCES' })
+    );
+
+    const syncer = new Syncer(registry, scanner, 'user');
+    await expect(syncer.sync(false)).rejects.toThrow('Permission denied');
+  });
+});
+
 // ─── sync() with real files — Latest-is-Greatest ───────────────────────────
 
 describe('Syncer.sync — Latest-is-Greatest with file fixtures', () => {

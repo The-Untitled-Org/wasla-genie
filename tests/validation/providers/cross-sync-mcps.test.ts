@@ -103,6 +103,35 @@ describe('Cross-Provider Sync: MCP Servers', () => {
     );
   });
 
+  it('creates a missing GitHub Copilot MCP configuration during sync', async () => {
+    const geminiMcpPath = join(tmpBase, '.gemini', 'settings.json');
+    const githubCopilotMcpPath = join(tmpBase, '.vscode-fake', 'mcp.json');
+    const githubAgentsPath = join(tmpBase, '.github', 'agents');
+
+    // Create Copilot marker so scanner detects github-copilot as installed
+    await ensureDir(githubAgentsPath);
+
+    await writeText(
+      geminiMcpPath,
+      JSON.stringify({
+        mcpServers: {
+          github: { command: 'github-mcp-server', args: ['stdio'] },
+        },
+      })
+    );
+
+    expect(await fileExists(githubCopilotMcpPath)).toBe(false);
+
+    const syncer = new Syncer(new RegistryManager('user'), new Scanner('user'), 'user');
+    await expect(syncer.sync(false)).resolves.toBeDefined();
+
+    expect(JSON.parse(await readText(githubCopilotMcpPath)).servers.github).toEqual({
+      type: 'stdio',
+      command: 'github-mcp-server',
+      args: ['stdio'],
+    });
+  });
+
   it('normalizes an OpenCode local MCP before writing provider-native configurations', async () => {
     const openCodeMcp = join(tmpBase, 'opencode.json');
     await writeText(

@@ -53,6 +53,7 @@ export class Syncer {
 
     const discovered = await this.scanner.scanAllTools();
     const grouped = this.groupByNameAndType(discovered);
+    await this.removeMissingFiles(grouped);
     const installedTools = await this.scanner.detectInstalledTools();
 
     let stubsWritten = 0;
@@ -226,11 +227,13 @@ export class Syncer {
     const assetTypes: AssetType[] = ['agent', 'skill', 'mcp', 'context'];
     const discovered = await this.scanner.scanTool(sourceTool, assetTypes);
     const grouped = this.groupByNameAndType(discovered);
+    await this.removeMissingFiles(grouped);
     const deletionScan = [...discovered];
     for (const tool of targetTools.filter((tool) => tool !== sourceTool)) {
       deletionScan.push(...(await this.scanner.scanTool(tool, assetTypes)));
     }
     const deletionGrouped = this.groupByNameAndType(deletionScan);
+    await this.removeMissingFiles(deletionGrouped);
 
     let stubsWritten = 0;
     const stubsDeleted = await this.reconcileDeletedAssets(
@@ -473,6 +476,48 @@ export class Syncer {
 
   private calculateHash(content: string): string {
     return createHash('sha256').update(content).digest('hex');
+  }
+
+  /**
+   * Filters discovered files, removing those that cannot be read (ENOENT).
+   * Treats read-time ENOENT as a deletion signal: if a file disappears during
+   * pruning, it is removed from sync and will be treated as a deletion in
+   * reconcileDeletedAssets. This prevents sync failures when files are deleted
+   * between scan and read phases.
+   */
+  private async removeMissingFiles(grouped: Record<string, DiscoveredFile[]>): Promise<void> {
+    for (const key of Object.keys(grouped)) {
+      const readable: DiscoveredFile[] = [];
+      for (const item of grouped[key]) {
+        if (item.content !== undefined) {
+          readable.push(item);
+          continue;
+        }
+        try {
+          item.content = await readText(item.path);
+          readable.push(item);
+        } catch (error) {
+          if (!this.isMissingFileError(error)) {
+            throw error;
+          }
+          // ENOENT: file was deleted after scanning, treat as deletion
+        }
+      }
+      if (readable.length > 0) {
+        grouped[key] = readable;
+      } else {
+        delete grouped[key];
+      }
+    }
+  }
+
+  private isMissingFileError(error: unknown): boolean {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      (error as NodeJS.ErrnoException).code === 'ENOENT'
+    );
   }
 
   private getTargetPath(

@@ -11,9 +11,7 @@
         "autoExecuteCommands": true,
         "icon": "folder",
         "color": "terminal.ansiWhite",
-        "commands": [
-          "ls -F"
-        ],
+        "commands": ["ls -F"],
         "joinOperator": ";"
       }
     ],
@@ -23,11 +21,7 @@
         "autoExecuteCommands": true,
         "icon": "package",
         "color": "terminal.ansiMagenta",
-        "commands": [
-          "npm ci",
-          "npm --prefix apps/visualizer ci",
-          "npm --prefix docs ci"
-        ],
+        "commands": ["npm ci", "npm --prefix apps/visualizer ci", "npm --prefix docs ci"],
         "joinOperator": ";"
       },
       {
@@ -35,9 +29,7 @@
         "autoExecuteCommands": true,
         "icon": "tools",
         "color": "terminal.ansiBlue",
-        "commands": [
-          "npm run build"
-        ],
+        "commands": ["npm run build"],
         "joinOperator": ";"
       },
       {
@@ -62,9 +54,7 @@
         "autoExecuteCommands": true,
         "icon": "eye",
         "color": "terminal.ansiCyan",
-        "commands": [
-          "npm run dev"
-        ],
+        "commands": ["npm run dev"],
         "joinOperator": ";"
       },
       {
@@ -72,9 +62,7 @@
         "autoExecuteCommands": true,
         "icon": "book",
         "color": "terminal.ansiCyan",
-        "commands": [
-          "npm run docs"
-        ],
+        "commands": ["npm run docs"],
         "joinOperator": ";"
       },
       {
@@ -82,9 +70,7 @@
         "autoExecuteCommands": true,
         "icon": "browser",
         "color": "terminal.ansiCyan",
-        "commands": [
-          "npm run visualizer:dev"
-        ],
+        "commands": ["npm run visualizer:dev"],
         "joinOperator": ";"
       }
     ],
@@ -94,9 +80,7 @@
         "autoExecuteCommands": true,
         "icon": "tools",
         "color": "terminal.ansiBlue",
-        "commands": [
-          "npm run build"
-        ],
+        "commands": ["npm run build"],
         "joinOperator": ";"
       },
       {
@@ -104,9 +88,7 @@
         "autoExecuteCommands": true,
         "icon": "cloud-upload",
         "color": "terminal.ansiBlue",
-        "commands": [
-          "npm run docs:build"
-        ],
+        "commands": ["npm run docs:build"],
         "joinOperator": ";"
       },
       {
@@ -114,9 +96,7 @@
         "autoExecuteCommands": true,
         "icon": "browser",
         "color": "terminal.ansiBlue",
-        "commands": [
-          "npm run visualizer:build"
-        ],
+        "commands": ["npm run visualizer:build"],
         "joinOperator": ";"
       }
     ],
@@ -126,9 +106,7 @@
         "autoExecuteCommands": true,
         "icon": "checklist",
         "color": "terminal.ansiYellow",
-        "commands": [
-          "npm run type:check"
-        ],
+        "commands": ["npm run type:check"],
         "joinOperator": ";"
       }
     ],
@@ -138,9 +116,7 @@
         "autoExecuteCommands": true,
         "icon": "error",
         "color": "terminal.ansiRed",
-        "commands": [
-          "npm run lint:check"
-        ],
+        "commands": ["npm run lint:check"],
         "joinOperator": ";"
       },
       {
@@ -148,9 +124,7 @@
         "autoExecuteCommands": true,
         "icon": "wrench",
         "color": "terminal.ansiBlue",
-        "commands": [
-          "npm run lint:fix"
-        ],
+        "commands": ["npm run lint:fix"],
         "joinOperator": ";"
       },
       {
@@ -158,9 +132,7 @@
         "autoExecuteCommands": true,
         "icon": "layout",
         "color": "terminal.ansiGreen",
-        "commands": [
-          "npm run format:check"
-        ],
+        "commands": ["npm run format:check"],
         "joinOperator": ";"
       },
       {
@@ -168,9 +140,7 @@
         "autoExecuteCommands": true,
         "icon": "zap",
         "color": "terminal.ansiGreen",
-        "commands": [
-          "npm run format"
-        ],
+        "commands": ["npm run format"],
         "joinOperator": ";"
       }
     ],
@@ -180,9 +150,7 @@
         "autoExecuteCommands": true,
         "icon": "test-view-icon",
         "color": "terminal.ansiMagenta",
-        "commands": [
-          "npm run test:watch"
-        ],
+        "commands": ["npm run test:watch"],
         "joinOperator": ";"
       },
       {
@@ -190,9 +158,7 @@
         "autoExecuteCommands": true,
         "icon": "beaker",
         "color": "terminal.ansiYellow",
-        "commands": [
-          "npm test"
-        ],
+        "commands": ["npm test"],
         "joinOperator": ";"
       },
       {
@@ -200,9 +166,7 @@
         "autoExecuteCommands": true,
         "icon": "pulse",
         "color": "terminal.ansiCyan",
-        "commands": [
-          "npm run test:unit"
-        ],
+        "commands": ["npm run test:unit"],
         "joinOperator": ";"
       },
       {
@@ -210,9 +174,7 @@
         "autoExecuteCommands": true,
         "icon": "git-compare",
         "color": "terminal.ansiBlue",
-        "commands": [
-          "npm run test:integration"
-        ],
+        "commands": ["npm run test:integration"],
         "joinOperator": ";"
       },
       {
@@ -220,9 +182,7 @@
         "autoExecuteCommands": true,
         "icon": "pass",
         "color": "terminal.ansiGreen",
-        "commands": [
-          "npm run test:validation"
-        ],
+        "commands": ["npm run test:validation"],
         "joinOperator": ";"
       },
       {
@@ -230,9 +190,7 @@
         "autoExecuteCommands": true,
         "icon": "shield",
         "color": "terminal.ansiMagenta",
-        "commands": [
-          "npm run test:coverage"
-        ],
+        "commands": ["npm run test:coverage"],
         "joinOperator": ";"
       },
       {
@@ -240,9 +198,7 @@
         "autoExecuteCommands": true,
         "icon": "browser",
         "color": "terminal.ansiCyan",
-        "commands": [
-          "npm run coverage:open"
-        ],
+        "commands": ["npm run coverage:open"],
         "joinOperator": ";"
       }
     ],
@@ -252,9 +208,7 @@
         "autoExecuteCommands": true,
         "icon": "list-unordered",
         "color": "terminal.ansiCyan",
-        "commands": [
-          "npm run changelog"
-        ],
+        "commands": ["npm run changelog"],
         "joinOperator": ";"
       },
       {
@@ -272,9 +226,7 @@
         "autoExecuteCommands": true,
         "icon": "tag",
         "color": "terminal.ansiCyan",
-        "commands": [
-          "gh release list"
-        ],
+        "commands": ["gh release list"],
         "joinOperator": ";"
       },
       {
@@ -282,9 +234,7 @@
         "autoExecuteCommands": true,
         "icon": "tag",
         "color": "terminal.ansiGreen",
-        "commands": [
-          "npm run release -- patch"
-        ],
+        "commands": ["npm run release -- patch"],
         "joinOperator": ";"
       },
       {
@@ -292,9 +242,7 @@
         "autoExecuteCommands": true,
         "icon": "tag",
         "color": "terminal.ansiYellow",
-        "commands": [
-          "npm run release -- minor"
-        ],
+        "commands": ["npm run release -- minor"],
         "joinOperator": ";"
       },
       {
@@ -302,9 +250,7 @@
         "autoExecuteCommands": true,
         "icon": "tag",
         "color": "terminal.ansiRed",
-        "commands": [
-          "npm run release -- major"
-        ],
+        "commands": ["npm run release -- major"],
         "joinOperator": ";"
       },
       {
@@ -312,9 +258,7 @@
         "autoExecuteCommands": false,
         "icon": "cloud-upload",
         "color": "terminal.ansiRed",
-        "commands": [
-          "git push origin main --follow-tags"
-        ],
+        "commands": ["git push origin main --follow-tags"],
         "joinOperator": ";"
       }
     ]

@@ -9,6 +9,16 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 
 
+## [1.0.0] - 2026-05-31
+
+### Added
+
+- `5705fc8` feat: enhance publish workflow with npm publish check and GitHub Release creation logic
+- `584b53b` feat: add npm version, downloads, and GitHub Release badges to README and index pages
+- `9eca871` feat: add Code of Conduct and Security Policy documents
+- `3383355` feat: update terminal sessions for tasks and add release workflows in sessions.json
+- `415292e` feat(scanner): implement a new Scanner class for detecting installed tools and scanning assets
+
 ## [0.1.3] - 2026-05-31
 
 ### Added
@@ -23,6 +33,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - `3e8d36a` fix: apply CodeRabbit auto-fixes
 - `e80c9f8` fix: improve cross-platform file path parsing and extension handling
 - `7b2de59` fix: cross-platform path parsing in scanner
+
+### Chores
+
+- `7506ed4` chore(release): v0.1.3
 
 ### Other
 

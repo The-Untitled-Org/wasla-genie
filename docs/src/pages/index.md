@@ -18,6 +18,9 @@
 
 [![MIT License](https://img.shields.io/badge/license-MIT-00C896?style=flat-square)](https://github.com/The-Untitled-Org/wasla-genie/blob/main/LICENSE)
 [![GitHub](https://img.shields.io/badge/github-The--Untitled--Org-00C896?style=flat-square&logo=github)](https://github.com/The-Untitled-Org/wasla-genie)
+[![npm version](https://img.shields.io/npm/v/@untitled-devs/wasla?style=flat-square&logo=npm)](https://www.npmjs.com/package/@untitled-devs/wasla)
+[![npm downloads](https://img.shields.io/npm/dm/@untitled-devs/wasla?style=flat-square&logo=npm)](https://www.npmjs.com/package/@untitled-devs/wasla)
+[![GitHub Release](https://img.shields.io/github/v/release/The-Untitled-Org/wasla-genie?style=flat-square)](https://github.com/The-Untitled-Org/wasla-genie/releases)
 [![Status](https://img.shields.io/badge/status-alpha-orange?style=flat-square)](https://github.com/The-Untitled-Org/wasla-genie)
 [![Contributors](https://img.shields.io/github/contributors/The-Untitled-Org/wasla-genie?style=flat-square&color=00C896)](https://github.com/The-Untitled-Org/wasla-genie/graphs/contributors)
 

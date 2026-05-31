@@ -18,12 +18,14 @@
     ],
     "tasks": [
       {
-        "name": "afk",
+        "name": "install",
         "autoExecuteCommands": true,
-        "icon": "robot",
+        "icon": "package",
         "color": "terminal.ansiMagenta",
         "commands": [
-          "npx tsx .sandcastle/run.ts"
+          "npm ci",
+          "npm --prefix src/visualizer ci",
+          "npm --prefix docs ci"
         ]
       },
       {
@@ -69,6 +71,15 @@
         "commands": [
           "npm run docs"
         ]
+      },
+      {
+        "name": "visualizer:watch",
+        "autoExecuteCommands": true,
+        "icon": "browser",
+        "color": "terminal.ansiCyan",
+        "commands": [
+          "npm run visualizer:dev"
+        ]
       }
     ],
     "build": [
@@ -88,6 +99,15 @@
         "color": "terminal.ansiBlue",
         "commands": [
           "npm run docs:build"
+        ]
+      },
+      {
+        "name": "visualizer:build",
+        "autoExecuteCommands": true,
+        "icon": "browser",
+        "color": "terminal.ansiBlue",
+        "commands": [
+          "npm run visualizer:build"
         ]
       }
     ],
@@ -202,6 +222,71 @@
         "color": "terminal.ansiCyan",
         "commands": [
           "npm run coverage:open"
+        ]
+      }
+    ],
+    "release": [
+      {
+        "name": "changelog:regenerate",
+        "autoExecuteCommands": true,
+        "icon": "list-unordered",
+        "color": "terminal.ansiCyan",
+        "commands": [
+          "npm run changelog"
+        ]
+      },
+      {
+        "name": "release:notes:latest",
+        "autoExecuteCommands": true,
+        "icon": "note",
+        "color": "terminal.ansiCyan",
+        "commands": [
+          "node scripts/release.mjs release-notes \"$(git tag --sort=version:refname | tail -n 1)\""
+        ]
+      },
+      {
+        "name": "release:list",
+        "autoExecuteCommands": true,
+        "icon": "tag",
+        "color": "terminal.ansiCyan",
+        "commands": [
+          "gh release list"
+        ]
+      },
+      {
+        "name": "release:patch",
+        "autoExecuteCommands": true,
+        "icon": "tag",
+        "color": "terminal.ansiGreen",
+        "commands": [
+          "npm run release -- patch"
+        ]
+      },
+      {
+        "name": "release:minor",
+        "autoExecuteCommands": true,
+        "icon": "tag",
+        "color": "terminal.ansiYellow",
+        "commands": [
+          "npm run release -- minor"
+        ]
+      },
+      {
+        "name": "release:major",
+        "autoExecuteCommands": true,
+        "icon": "tag",
+        "color": "terminal.ansiRed",
+        "commands": [
+          "npm run release -- major"
+        ]
+      },
+      {
+        "name": "release:push",
+        "autoExecuteCommands": false,
+        "icon": "cloud-upload",
+        "color": "terminal.ansiRed",
+        "commands": [
+          "git push origin main --follow-tags"
         ]
       }
     ]

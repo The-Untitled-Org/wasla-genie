@@ -20,18 +20,22 @@ The `.vscode/sessions.json` file defines preset terminal sessions that you can q
 ### Available Sessions
 
 1. **navigation** — Open a terminal at the repository root
-2. **tasks** — Run the AFK workflow, build the project, or execute the PR checklist
-3. **dev** — Start app or documentation watch mode
-4. **build** — Build the app or documentation site
+2. **tasks** — Install dependencies, build the project, or execute the PR checklist
+3. **dev** — Start app, documentation, or visualizer watch mode
+4. **build** — Build the app, documentation site, or visualizer
 5. **type** — Run the TypeScript check
 6. **lint** — Check or fix linting and formatting
 7. **test** — Run test suites, watch mode, coverage, or open the coverage report
+8. **release** — Regenerate the changelog, inspect releases, or prepare patch, minor, and major releases
 
 ### How to Use
 
 1. Open the Terminal Keeper sidebar (or press ⌘+Shift+T on Mac)
 2. Click any session to open it in a new terminal
 3. Sessions marked "autoExecuteCommands: true" run automatically
+
+The `release:patch`, `release:minor`, and `release:major` sessions prepare a local release commit and
+annotated tag. Review the result before using the non-auto-executing `release:push` session.
 
 ## ⚙️ VSCode Settings
 
